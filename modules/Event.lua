@@ -1,8 +1,9 @@
 local Event = {
     ["Connections"] = {}
 }
+Event.__index = Event
 
-function Event:Clear(self)
+function Event.Clear(self)
     for _,con in pairs(self.Connections) do
         con:Disconnect()
     end
