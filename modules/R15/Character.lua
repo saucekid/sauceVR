@@ -197,7 +197,7 @@ function char.new(CharacterModel)
     end)
 
     --Set up replication at 30hz.
-    if Players.LocalPlayer and Players.LocalPlayer.Character == CharacterModel then
+    if Players.LocalPlayer then
         coroutine.wrap(function()
             while Character.Humanoid.Health > 0 do
                 --Send the new CFrames if the CFrames changed.
