@@ -97,7 +97,7 @@ function char.new(CharacterModel)
             LeftWristRigAttachment = Character.Parts.LeftHand:WaitForChild("LeftWristRigAttachment"),
         },
         RightUpperLeg = {
-            RightHipRigAttachment = seCharacterlf.Parts.RightUpperLeg:WaitForChild("RightHipRigAttachment"),
+            RightHipRigAttachment = Character.Parts.RightUpperLeg:WaitForChild("RightHipRigAttachment"),
             RightKneeRigAttachment = Character.Parts.RightUpperLeg:WaitForChild("RightKneeRigAttachment"),
         },
         RightLowerLeg = {
