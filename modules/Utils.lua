@@ -18,4 +18,8 @@ function Utils.VRCharacter(Character)
     VRCharacter.Parent = workspace.Terrain
 end
 
+function Utils.NoCollide(a, b)
+    for i,v in pairs(a:GetChildren()) 
+end
+
 return Utils

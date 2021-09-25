@@ -1,14 +1,13 @@
 local Event = {
-    ["Connections"] = {}
+    ["Connections"] = {},
+    ["Clear"] = function(self)
+        for _,con in pairs(self.Connections) do
+            con:Disconnect()
+        end
+    end
 }
-
 Event.__index = Event
 
-function Event.Clear(self)
-    for _,con in pairs(self.Connections) do
-        con:Disconnect()
-    end
-end
 
 setmetatable(Event, {
     __call = function(self, ...)
