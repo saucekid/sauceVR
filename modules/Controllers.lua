@@ -27,7 +27,6 @@ end
 function BaseController:Enable()
     if not self.Connections then self.Connections = {} end
 
-    self:UpdateCharacterReference()
     if not self.Character then
         return
     end
