@@ -55,7 +55,7 @@ function ControlServiceModule.new()
 
     
     ControlServiceModule.RegisteredControllers = {}
-    ControlServiceModule:RegisterController("None",BaseController.new())
+    ControlServiceModule:RegisterController("None",BaseController)
     --ControlServiceModule:RegisterController("Teleport",TeleportController.new())
     --ControlServiceModule:RegisterController("SmoothLocomotion",SmoothLocomotionController.new())
     return ControlService
