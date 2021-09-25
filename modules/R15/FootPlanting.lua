@@ -6,7 +6,9 @@ local V3new = Vector3.new
 local rad,atan2,acos = math.rad,math.atan2,math.acos
 local min,max,abs,log = math.min,math.max,math.abs,math.log
 
+local getModule = loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/saucekid/sauceVR/main/modules/getModule.lua"))()
 
+local Utils = getModule("Utils")
 
 function FootPlanter:CreateSolver(CenterPart,ScaleValue)
 	--Heavily modified code from Stravant
@@ -92,9 +94,8 @@ function FootPlanter:CreateSolver(CenterPart,ScaleValue)
 		return atan2(lookVector.X,lookVector.Z)
 	end
 	
-	local FindCollidablePartOnRay = require(script.Parent.Parent:WaitForChild("Util"):WaitForChild("FindCollidablePartOnRay"))
 	local function FindPartOnRay(ray,ignore)
-		return FindCollidablePartOnRay(ray.Origin,ray.Direction,ignore,CenterPart)
+		return Utils:FindCollidablePartOnRay(ray.Origin,ray.Direction,ignore,CenterPart)
 	end
 	
 	
