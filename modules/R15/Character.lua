@@ -218,18 +218,18 @@ function char.new(CharacterModel)
 
     function Character:GetHumanoidSeatPart()
         --Return nil if the Humanoid is not sitting.
-        if not self.Humanoid.Sit then
+        if not Character.Humanoid.Sit then
             return nil
         end
     
         --Return if the seat part is defined.
-        if self.Humanoid.SeatPart then
-            return self.Humanoid.SeatPart
+        if Character.Humanoid.SeatPart then
+            return Character.Humanoid.SeatPart
         end
     
         --Iterated through the connected parts and return if a seat exists.
         --While SeatPart may not be set, a SeatWeld does exist.
-        for _,ConnectedPart in pairs(self.Parts.HumanoidRootPart:GetConnectedParts()) do
+        for _,ConnectedPart in pairs(Character.Parts.HumanoidRootPart:GetConnectedParts()) do
             if ConnectedPart:IsA("Seat") or ConnectedPart:IsA("VehicleSeat") then
                 return ConnectedPart
             end
@@ -241,7 +241,7 @@ function char.new(CharacterModel)
     it is configured.
     --]]
     function Character:SetCFrameProperty(Object,PropertyName,PropertyValue)
-        if self.TweenComponents then
+        if Character.TweenComponents then
             TweenService:Create(
                 Object,
                 TweenInfo.new(0.1,Enum.EasingStyle.Quad,Enum.EasingDirection.Out),
@@ -258,7 +258,7 @@ function char.new(CharacterModel)
     Sets the transform of a motor.
     --]]
     function Character:SetTransform(MotorName,AttachmentName,StartLimbName,EndLimbName,StartCFrame,EndCFrame)
-        self:SetCFrameProperty(self.Motors[MotorName],"Transform",(StartCFrame * self.Attachments[StartLimbName][AttachmentName].CFrame):Inverse() * (EndCFrame * self.Attachments[EndLimbName][AttachmentName].CFrame))
+        Character:SetCFrameProperty(Character.Motors[MotorName],"Transform",(StartCFrame * Character.Attachments[StartLimbName][AttachmentName].CFrame):Inverse() * (EndCFrame * Character.Attachments[EndLimbName][AttachmentName].CFrame))
     end
     
     --[[
@@ -266,40 +266,40 @@ function char.new(CharacterModel)
     --]]
     function Character:UpdateFromInputs(HeadControllerCFrame,LeftHandControllerCFrame,RightHandControllerCFrame)
         --Return if the humanoid is dead.
-        if self.Humanoid.Health <= 0 then
+        if Character.Humanoid.Health <= 0 then
             return
         end
     
         --Call the other method if there is a SeatPart.
         --The math below is not used while in seats due to assumptions made while standing.
         --The CFrames will already be in local space from the replication.
-        local SeatPart = self:GetHumanoidSeatPart()
+        local SeatPart = Character:GetHumanoidSeatPart()
         if SeatPart then
-            self:UpdateFromInputsSeated(HeadControllerCFrame,LeftHandControllerCFrame,RightHandControllerCFrame)
+            Character:UpdateFromInputsSeated(HeadControllerCFrame,LeftHandControllerCFrame,RightHandControllerCFrame)
             return
         end
     
         --Get the CFrames.
-        local HeadCFrame = self.Head:GetHeadCFrame(HeadControllerCFrame)
-        local NeckCFrame = self.Head:GetNeckCFrame(HeadControllerCFrame)
-        local LowerTorsoCFrame,UpperTorsoCFrame = self.Torso:GetTorsoCFrames(NeckCFrame)
-        local JointCFrames = self.Torso:GetAppendageJointCFrames(LowerTorsoCFrame,UpperTorsoCFrame)
-        local LeftUpperArmCFrame,LeftLowerArmCFrame,LeftHandCFrame = self.LeftArm:GetAppendageCFrames(JointCFrames["LeftShoulder"],LeftHandControllerCFrame)
-        local RightUpperArmCFrame,RightLowerArmCFrame,RightHandCFrame = self.RightArm:GetAppendageCFrames(JointCFrames["RightShoulder"],RightHandControllerCFrame)
+        local HeadCFrame = Character.Head:GetHeadCFrame(HeadControllerCFrame)
+        local NeckCFrame = Character.Head:GetNeckCFrame(HeadControllerCFrame)
+        local LowerTorsoCFrame,UpperTorsoCFrame = Character.Torso:GetTorsoCFrames(NeckCFrame)
+        local JointCFrames = Character.Torso:GetAppendageJointCFrames(LowerTorsoCFrame,UpperTorsoCFrame)
+        local LeftUpperArmCFrame,LeftLowerArmCFrame,LeftHandCFrame = Character.LeftArm:GetAppendageCFrames(JointCFrames["LeftShoulder"],LeftHandControllerCFrame)
+        local RightUpperArmCFrame,RightLowerArmCFrame,RightHandCFrame = Character.RightArm:GetAppendageCFrames(JointCFrames["RightShoulder"],RightHandControllerCFrame)
     
         --Set the character CFrames.
         --HumanoidRootParts must always face up. This makes the math more complicated.
         --Setting the CFrame directly to something not facing directly up will result in the physics
         --attempting to correct that within the next frame, causing the character to appear to move.
-        local LeftFoot,RightFoot = self.FootPlanter:GetFeetCFrames()
-        local LeftUpperLegCFrame,LeftLowerLegCFrame,LeftFootCFrame = self.LeftLeg:GetAppendageCFrames(JointCFrames["LeftHip"],LeftFoot * CFrame.Angles(0,math.pi,0))
-        local RightUpperLegCFrame,RightLowerLegCFrame,RightFootCFrame = self.RightLeg:GetAppendageCFrames(JointCFrames["RightHip"],RightFoot * CFrame.Angles(0,math.pi,0))
-        local TargetHumanoidRootPartCFrame = LowerTorsoCFrame * self.Attachments.LowerTorso.RootRigAttachment.CFrame * self.Attachments.HumanoidRootPart.RootRigAttachment.CFrame:Inverse()
-        local ActualHumanoidRootPartCFrame = self.Parts.HumanoidRootPart.CFrame
+        local LeftFoot,RightFoot = Character.FootPlanter:GetFeetCFrames()
+        local LeftUpperLegCFrame,LeftLowerLegCFrame,LeftFootCFrame = Character.LeftLeg:GetAppendageCFrames(JointCFrames["LeftHip"],LeftFoot * CFrame.Angles(0,math.pi,0))
+        local RightUpperLegCFrame,RightLowerLegCFrame,RightFootCFrame = Character.RightLeg:GetAppendageCFrames(JointCFrames["RightHip"],RightFoot * CFrame.Angles(0,math.pi,0))
+        local TargetHumanoidRootPartCFrame = LowerTorsoCFrame * Character.Attachments.LowerTorso.RootRigAttachment.CFrame * Character.Attachments.HumanoidRootPart.RootRigAttachment.CFrame:Inverse()
+        local ActualHumanoidRootPartCFrame = Character.Parts.HumanoidRootPart.CFrame
         local HumanoidRootPartHeightDifference = ActualHumanoidRootPartCFrame.Y - TargetHumanoidRootPartCFrame.Y
         local NewTargetHumanoidRootPartCFrame = CFrame.new(TargetHumanoidRootPartCFrame.Position)
-        Character:SetCFrameProperty(self.Parts.HumanoidRootPart,"CFrame",CFrame.new(0,HumanoidRootPartHeightDifference,0) * NewTargetHumanoidRootPartCFrame)
-        Character:SetCFrameProperty(self.Motors.Root,"Transform",CFrame.new(0,-HumanoidRootPartHeightDifference,0) * (NewTargetHumanoidRootPartCFrame * Character.Attachments.HumanoidRootPart.RootRigAttachment.CFrame):Inverse() * LowerTorsoCFrame * Character.Attachments.LowerTorso.RootRigAttachment.CFrame)
+        Character:SetCFrameProperty(Character.Parts.HumanoidRootPart,"CFrame",CFrame.new(0,HumanoidRootPartHeightDifference,0) * NewTargetHumanoidRootPartCFrame)
+        Character:SetCFrameProperty(Character.Motors.Root,"Transform",CFrame.new(0,-HumanoidRootPartHeightDifference,0) * (NewTargetHumanoidRootPartCFrame * Character.Attachments.HumanoidRootPart.RootRigAttachment.CFrame):Inverse() * LowerTorsoCFrame * Character.Attachments.LowerTorso.RootRigAttachment.CFrame)
         Character:SetTransform("RightHip","RightHipRigAttachment","LowerTorso","RightUpperLeg",LowerTorsoCFrame,RightUpperLegCFrame)
         Character:SetTransform("RightKnee","RightKneeRigAttachment","RightUpperLeg","RightLowerLeg",RightUpperLegCFrame,RightLowerLegCFrame)
         Character:SetTransform("RightAnkle","RightAnkleRigAttachment","RightLowerLeg","RightFoot",RightLowerLegCFrame,RightFootCFrame)
@@ -378,4 +378,4 @@ https://devforum.roblox.com/t/seat-occupant-and-humanoid-seatpart-not-replicatin
 
 
 
-return char
+return Character

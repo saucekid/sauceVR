@@ -1,6 +1,6 @@
 local Appendage = {}
 
-function Appendage:new(UpperLimb,LowerLimb,LimbEnd,StartAttachment,LimbJointAttachment,LimbEndAttachment,LimbHoldAttachment,PreventDisconnection)
+function Appendage.new(self, UpperLimb,LowerLimb,LimbEnd,StartAttachment,LimbJointAttachment,LimbEndAttachment,LimbHoldAttachment,PreventDisconnection)
     --Store the parts and attachment names.
     self.UpperLimb = UpperLimb
     self.LowerLimb = LowerLimb
