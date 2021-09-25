@@ -14,7 +14,7 @@ local ContextActionService = game:GetService("ContextActionService")
 local UserInputService = game:GetService("UserInputService")
 
 local CameraService = getModule("Services/CameraService")
-local VRInputService = getModule("Services/VRInputServiceService")
+local VRInputService = getModule("Services/VRInputService")
 
 local BaseController = {}
 
