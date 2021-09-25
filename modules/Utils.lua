@@ -9,6 +9,7 @@ function Utils.WaitForChildOfClass(parent, class)
 end
 
 function Utils.VRCharacter(Character)
+    Character.Archivable = true
     local VRCharacter = Character:Clone()
     for _,v in pairs(VRCharacter:GetDescendants()) do
         if v:IsA("BasePart") then end
