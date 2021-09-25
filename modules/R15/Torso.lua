@@ -1,6 +1,6 @@
 local Torso = {}
 
-function Torso:__new(LowerTorso,UpperTorso)
+function Torso:new(LowerTorso,UpperTorso)
     --Store the parts.
     self.LowerTorso = LowerTorso
     self.UpperTorso = UpperTorso

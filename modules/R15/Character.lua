@@ -15,7 +15,7 @@ local Character = {}
 --[[
 Creates a character.
 --]]
-function Character:__new(CharacterModel)
+function Character:new(CharacterModel)
     self.CharacterModel = CharacterModel
     self.TweenComponents = true
 

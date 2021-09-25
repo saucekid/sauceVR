@@ -1,6 +1,6 @@
 local Head = {}
 
-function Head:__new(Head)
+function Head:new(Head)
     self:InitializeSuper()
 
     --Store the parts.
