@@ -24,7 +24,6 @@ local function GetAngleToGlobalY(CF)
 end
 
 
-
 function BaseController:Enable()
     if not self.Connections then self.Connections = {} end
 

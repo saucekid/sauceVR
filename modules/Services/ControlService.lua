@@ -1,14 +1,13 @@
---[[
-TheNexusAvenger
 
-Manages controlling the local characters.
---]]
+function getModule(module)
+    assert(type(module) == "string", "string only")
+    local path = "https://raw.githubusercontent.com/saucekid/sauceVR/main/modules/"
+    local module =  loadstring(game:HttpGetAsync(path.. module.. ".lua"))()
+    return module
+end
 
-local NexusVRCharacterModel = require(script.Parent.Parent)
-local NexusObject = NexusVRCharacterModel:GetResource("NexusInstance.NexusObject")
-local BaseController = NexusVRCharacterModel:GetResource("Character.Controller.BaseController")
-local TeleportController = NexusVRCharacterModel:GetResource("Character.Controller.TeleportController")
-local SmoothLocomotionController = NexusVRCharacterModel:GetResource("Character.Controller.SmoothLocomotionController")
+local BaseController = getModule("Controllers")
+
 
 local ControlServiceModule = {}
 
@@ -22,6 +21,17 @@ function ControlServiceModule.new()
         self.RegisteredControllers[Name] = Controller
     end
     
+    
+    function ControlService:UpdateCharacterReference(character)
+        local LastCharacter = self.Character
+        self.Character = character
+        if not self.Character then
+            return
+        end
+        return LastCharacter ~= self.Character
+    end
+
+    
     function ControlService:SetActiveController(Name)
         if self.ActiveController == Name then return end
         self.ActiveController = Name
@@ -30,6 +40,7 @@ function ControlServiceModule.new()
         end
         self.CurrentController = self.RegisteredControllers[Name]
         if self.CurrentController then
+            self.CurrentController.Character = self.Character
             self.CurrentController:Enable()
         elseif Name ~= nil then
             warn("Character Model controller \""..tostring(Name).."\" is not registered.")
