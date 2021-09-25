@@ -1,7 +1,12 @@
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 
-local getModule = loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/saucekid/sauceVR/main/modules/getModule.lua"))()
+function getModule(module)
+    assert(type(module) == "string", "string only")
+    local path = "https://raw.githubusercontent.com/saucekid/sauceVR/main/modules/"
+    local module =  loadstring(game:HttpGetAsync(path.. module.. ".lua"))()
+    return module
+end
 
 local Head = getModule("R15/Head")
 local Torso = getModule("R15/Torso")
