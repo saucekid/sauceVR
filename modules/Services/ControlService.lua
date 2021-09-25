@@ -16,7 +16,7 @@ end
     
     
 function ControlService:UpdateCharacterReference(character)
-    local LastCharacter = self.Character
+    local LastCharacter = self.Character or nil
     self.Character = character
     if not self.Character then
         return
