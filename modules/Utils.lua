@@ -37,6 +37,8 @@ function Utils:VRCharacter(Character)
     end 
     VRCharacter:SetPrimaryPartCFrame(Character.PrimaryPart.CFrame)
     VRCharacter.Parent = workspace.Terrain
+
+    return VRCharacter
 end
 
 return Utils
