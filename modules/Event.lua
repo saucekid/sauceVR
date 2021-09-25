@@ -1,6 +1,7 @@
 local Event = {
     ["Connections"] = {}
 }
+
 Event.__index = Event
 
 function Event.Clear(self)
