@@ -203,7 +203,7 @@ function char.new(CharacterModel)
                 --Send the new CFrames if the CFrames changed.
                 if Character.LastReplicationCFrames ~= Character.ReplicationCFrames then
                     Character.LastReplicationCFrames = Character.ReplicationCFrames
-                    UpdateInputs:FireServer(unpack(Character.ReplicationCFrames))
+                    Character:UpdateFromInputs(unpack(Character.ReplicationCFrames))
                 end
 
                 --Wait 1/30th of a second to send the next set of CFrames.
