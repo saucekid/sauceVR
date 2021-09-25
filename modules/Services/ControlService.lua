@@ -9,6 +9,7 @@ end
 local BaseController = getModule("Controllers")
 
 local ControlService = {}
+ControlService.RegisteredControllers = {}
 
 function ControlService:RegisterController(Name,Controller)
     self.RegisteredControllers[Name] = Controller
@@ -47,8 +48,7 @@ function ControlService:UpdateCharacter()
 end
 
     
-ControlService.RegisteredControllers = {}
-ControlService:RegisterController("None",BaseController)
+ControlService:RegisterController("None", BaseController)
     --ControlServiceModule:RegisterController("Teleport",TeleportController.new())
     --ControlServiceModule:RegisterController("SmoothLocomotion",SmoothLocomotionController.new())
 
