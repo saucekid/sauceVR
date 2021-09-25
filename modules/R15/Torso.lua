@@ -5,6 +5,11 @@ function torsoModule.new(LowerTorso,UpperTorso)
     Torso.LowerTorso = LowerTorso
     Torso.UpperTorso = UpperTorso
 
+    function Torso:GetAttachmentCFrame(Part,AttachmentName)
+        local Attachment = Part:FindFirstChild(AttachmentName)
+        return Attachment and Attachment.CFrame or CFrame.new()
+    end
+
     function Torso:GetTorsoCFrames(NeckCFrame)
         local UpperTorsoCFrame = NeckCFrame * self:GetAttachmentCFrame(self.UpperTorso,"NeckRigAttachment"):inverse()
     

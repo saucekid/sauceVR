@@ -4,6 +4,11 @@ function headModule.new(Head)
     local Head = {}
     Head.Head = Head
 
+    function Head:GetAttachmentCFrame(Part,AttachmentName)
+        local Attachment = Part:FindFirstChild(AttachmentName)
+        return Attachment and Attachment.CFrame or CFrame.new()
+    end
+    
     function Head:GetEyesOffset()
         return self:GetAttachmentCFrame(self.Head,"FaceFrontAttachment") * CFrame.new(0,self.Head.Size.Y/4,0)
     end

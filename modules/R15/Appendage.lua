@@ -12,6 +12,11 @@ function appendageModule.new(UpperLimb,LowerLimb,LimbEnd,StartAttachment,LimbJoi
     Appendage.LimbHoldAttachment = LimbHoldAttachment
     Appendage.PreventDisconnection = PreventDisconnection or false
 
+    function Appendage:GetAttachmentCFrame(Part,AttachmentName)
+        local Attachment = Part:FindFirstChild(AttachmentName)
+        return Attachment and Attachment.CFrame or CFrame.new()
+    end
+
     function Appendage:SolveJoint(OriginCFrame,TargetPosition,Length1,Length2)
         local LocalizedPosition = OriginCFrame:pointToObjectSpace(TargetPosition)
         local LocalizedUnit = LocalizedPosition.unit
