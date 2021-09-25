@@ -36,7 +36,7 @@ function CameraService:UpdateCamera(HeadsetCFrameWorld)
 end
 
 CameraService.RegisteredCameras = {}
-CameraService:RegisterCamera("Default",DefaultCamera.new())
-CameraService:RegisterCamera("ThirdPersonTrack",ThirdPersonTrackCamera.new())
+CameraService:RegisterCamera("Default",DefaultCamera)
+CameraService:RegisterCamera("ThirdPersonTrack",ThirdPersonTrackCamera)
 
 return CameraService
