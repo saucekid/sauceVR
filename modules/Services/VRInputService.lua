@@ -1,10 +1,6 @@
 local THUMBSTICK_SAMPLES_TO_RESET = 5
 
 
-
-local VRInputServiceModule = {}
-
-function VRInputServiceModule.new(VRService,UserInputService)
     local VRInputService = {}
 
     VRInputService.RecenterOffset = CFrame.new()
@@ -133,9 +129,3 @@ function VRInputServiceModule.new(VRService,UserInputService)
     end
 
     return VRInputService
-end
-
-
-
-
-return VRInputServiceModule

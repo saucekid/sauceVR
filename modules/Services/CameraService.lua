@@ -7,46 +7,36 @@ end
 
 local DefaultCamera, ThirdPersonTrackCamera = getModule("Cameras")
 
-local CameraServiceModules = {}
+local CameraService = {}
 
-
-function CameraServiceModules.new()
-    local CameraService = {}
-
-    function CameraService:RegisterCamera(Name,Camera)
-        self.RegisteredCameras[Name] = Camera
-    end
+function CameraService:RegisterCamera(Name,Camera)
+    self.RegisteredCameras[Name] = Camera
+end
     
     function CameraService:SetActiveCamera(Name)
-        if self.ActiveCamera == Name then return end
-        self.ActiveCamera = Name
+    if self.ActiveCamera == Name then return end
+    self.ActiveCamera = Name
     
-        if self.CurrentCamera then
-            self.CurrentCamera:Disable()
-        end
-    
-        self.CurrentCamera = self.RegisteredCameras[Name]
-        if self.CurrentCamera then
-            self.CurrentCamera:Enable()
-        elseif Name ~= nil then
-            warn("Camera \""..tostring(Name).."\" is not registered.")
-        end
+    if self.CurrentCamera then
+        self.CurrentCamera:Disable()
     end
     
-    function CameraService:UpdateCamera(HeadsetCFrameWorld)
-        if self.CurrentCamera then
-            self.CurrentCamera:UpdateCamera(HeadsetCFrameWorld)
-        end
+    self.CurrentCamera = self.RegisteredCameras[Name]
+    if self.CurrentCamera then
+        self.CurrentCamera:Enable()
+    elseif Name ~= nil then
+        warn("Camera \""..tostring(Name).."\" is not registered.")
     end
-
-    CameraService.RegisteredCameras = {}
-    CameraService:RegisterCamera("Default",DefaultCamera.new())
-    CameraService:RegisterCamera("ThirdPersonTrack",ThirdPersonTrackCamera.new())
-
-    return CameraService
+end
+    
+function CameraService:UpdateCamera(HeadsetCFrameWorld)
+    if self.CurrentCamera then
+        self.CurrentCamera:UpdateCamera(HeadsetCFrameWorld)
+    end
 end
 
+CameraService.RegisteredCameras = {}
+CameraService:RegisterCamera("Default",DefaultCamera.new())
+CameraService:RegisterCamera("ThirdPersonTrack",ThirdPersonTrackCamera.new())
 
-
-
-return CameraServiceModules
+return CameraService

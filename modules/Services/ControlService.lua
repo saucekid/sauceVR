@@ -8,59 +8,50 @@ end
 
 local BaseController = getModule("Controllers")
 
+local ControlService = {}
 
-local ControlServiceModule = {}
-
-
-
-
-function ControlServiceModule.new()
-    local ControlService = {}
-
-    function ControlService:RegisterController(Name,Controller)
-        self.RegisteredControllers[Name] = Controller
-    end
+function ControlService:RegisterController(Name,Controller)
+    self.RegisteredControllers[Name] = Controller
+end
     
     
-    function ControlService:UpdateCharacterReference(character)
-        local LastCharacter = self.Character
-        self.Character = character
-        if not self.Character then
-            return
-        end
-        return LastCharacter ~= self.Character
+function ControlService:UpdateCharacterReference(character)
+    local LastCharacter = self.Character
+    self.Character = character
+    if not self.Character then
+        return
     end
-
-    
-    function ControlService:SetActiveController(Name)
-        if self.ActiveController == Name then return end
-        self.ActiveController = Name
-        if self.CurrentController then
-            self.CurrentController:Disable()
-        end
-        self.CurrentController = self.RegisteredControllers[Name]
-        if self.CurrentController then
-            self.CurrentController.Character = self.Character
-            self.CurrentController:Enable()
-        elseif Name ~= nil then
-            warn("Character Model controller \""..tostring(Name).."\" is not registered.")
-        end
-    end
-
-    function ControlService:UpdateCharacter()
-        if self.CurrentController then
-            self.CurrentController:UpdateCharacter()
-        end
-    end
-
-    
-    ControlServiceModule.RegisteredControllers = {}
-    ControlServiceModule:RegisterController("None",BaseController)
-    --ControlServiceModule:RegisterController("Teleport",TeleportController.new())
-    --ControlServiceModule:RegisterController("SmoothLocomotion",SmoothLocomotionController.new())
-    return ControlService
+    return LastCharacter ~= self.Character
 end
 
+    
+function ControlService:SetActiveController(Name)
+    if self.ActiveController == Name then return end
+    self.ActiveController = Name
+    if self.CurrentController then
+        self.CurrentController:Disable()
+    end
+    self.CurrentController = self.RegisteredControllers[Name]
+    if self.CurrentController then
+        self.CurrentController.Character = self.Character
+        self.CurrentController:Enable()
+    elseif Name ~= nil then
+        warn("Character Model controller \""..tostring(Name).."\" is not registered.")
+    end
+end
+
+function ControlService:UpdateCharacter()
+    if self.CurrentController then
+        self.CurrentController:UpdateCharacter()
+    end
+end
+
+    
+ControlService.RegisteredControllers = {}
+ControlService:RegisterController("None",BaseController)
+    --ControlServiceModule:RegisterController("Teleport",TeleportController.new())
+    --ControlServiceModule:RegisterController("SmoothLocomotion",SmoothLocomotionController.new())
 
 
-return ControlServiceModule
+
+return ControlService
