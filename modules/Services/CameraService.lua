@@ -15,8 +15,9 @@ function CameraService:RegisterCamera(Name,Camera)
     self.RegisteredCameras[Name] = Camera
 end
 
-CameraService:RegisterCamera("Default",DefaultCamera)
 CameraService:RegisterCamera("ThirdPersonTrack",ThirdPersonTrackCamera)
+CameraService:RegisterCamera("Default",DefaultCamera)
+
 
 function CameraService:SetActiveCamera(Name)
     if self.ActiveCamera == Name then return end
