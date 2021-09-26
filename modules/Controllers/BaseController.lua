@@ -1,18 +1,16 @@
 local THUMBSTICK_DEADZONE_RADIUS = 0.2
 
-local Event = game.Players.LocalPlayer:FindFirstChild("EyeEvent") or Instance.new("BindableEvent", game.Players.LocalPlayer); Event.Name = "EyeEvent"
-
-
-local function GetAngleToGlobalY(CF)
-    return math.atan2(-CF.LookVector.X,-CF.LookVector.Z)
-end
-
 local VRService = game:GetService("VRService")
 local Workspace = game:GetService("Workspace")
 local Players = game:GetService("Players")
 local ContextActionService = game:GetService("ContextActionService")
 local UserInputService = game:GetService("UserInputService")
 
+local Event = game.Players.LocalPlayer:FindFirstChild("EyeEvent") or Instance.new("BindableEvent", game.Players.LocalPlayer); Event.Name = "EyeEvent"
+
+local function GetAngleToGlobalY(CF)
+    return math.atan2(-CF.LookVector.X,-CF.LookVector.Z)
+end
 
 
 local BaseController = {}
