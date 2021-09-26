@@ -76,15 +76,15 @@ end
 -----====================={Third Person Camera}
 local ThirdPersonCamera = {}
 
-function ThirdPersonCamera:Enable(self)
+function ThirdPersonCamera:Enable()
     self.FetchInitialCFrame = true
 end
 
-function ThirdPersonCamera:Disable(self)
+function ThirdPersonCamera:Disable()
     self.FetchInitialCFrame = nil
 end
 
-function ThirdPersonCamera:UpdateCamera(self, HeadsetCFrameWorld)
+function ThirdPersonCamera:UpdateCamera(HeadsetCFrameWorld)
     if self.FetchInitialCFrame then
         self.BaseFaceAngleY = math.atan2(-HeadsetCFrameWorld.LookVector.X,-HeadsetCFrameWorld.LookVector.Z)
         self.BaseCFrame = CFrame.new(HeadsetCFrameWorld.Position) * CFrame.Angles(0,self.BaseFaceAngleY,0)
