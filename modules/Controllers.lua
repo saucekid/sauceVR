@@ -14,7 +14,7 @@ local Players = game:GetService("Players")
 local ContextActionService = game:GetService("ContextActionService")
 local UserInputService = game:GetService("UserInputService")
 
-local CameraService = getModule("Services/CameraService")
+--CameraService = not CameraService and getModule("Services/CameraService") or CameraService
 local VRInputService = getModule("Services/VRInputService")
 
 local BaseController = {}
