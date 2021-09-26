@@ -1,4 +1,5 @@
 local THUMBSTICK_DEADZONE_RADIUS = 0.2
+local Event = game.Players.LocalPlayer:FindFirstChild("EyeEvent") or Instance.new("BindableEvent", game.Players.LocalPlayer); Event.Name = "EyeEvent"
 
 function getModule(module)
     assert(type(module) == "string", "string only")
@@ -31,9 +32,11 @@ function BaseController:Enable()
         return
     end
 
-    table.insert(self.Connections,VRInputService.EyeLevelSet:Connect(function()
-        if self.LastHeadCFrame.Y > 0 then
-            self.LastHeadCFrame = CFrame.new(0,-self.LastHeadCFrame.Y,0) * self.LastHeadCFrame
+    table.insert(self.Connections,Event:Connect(function(type)
+        if type == "EyeLevel" then
+            if self.LastHeadCFrame.Y > 0 then
+                self.LastHeadCFrame = CFrame.new(0,-self.LastHeadCFrame.Y,0) * self.LastHeadCFrame
+            end
         end
     end))
 

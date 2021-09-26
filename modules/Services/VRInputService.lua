@@ -1,5 +1,5 @@
 local THUMBSTICK_SAMPLES_TO_RESET = 5
-
+local Event = game.Players.LocalPlayer:WaitForChild("EyeEvent") or Instance.new("BindableEvent", game.Players.LocalPlayer); Event.Name = "EyeEvent"
 
     local VRInputService = {}
 
@@ -88,13 +88,13 @@ local THUMBSTICK_SAMPLES_TO_RESET = 5
     function VRInputService:Recenter()
         local HeadCFrame = self.VRService:GetUserCFrame(Enum.UserCFrame.Head)
         self.RecenterOffset = CFrame.Angles(0,-math.atan2(-HeadCFrame.LookVector.X,-HeadCFrame.LookVector.Z),0) * CFrame.new(-HeadCFrame.X,0,-HeadCFrame.Z)
-        self.Recentered:Fire()
+        Event:Fire("Recenter")
     end
     
 
     function VRInputService:SetEyeLevel()
         self.ManualNormalHeadLevel = self.VRService:GetUserCFrame(Enum.UserCFrame.Head).Y
-        self.EyeLevelSet:Fire()
+        Event:Fire("EyeLevel")
     end
     
 
