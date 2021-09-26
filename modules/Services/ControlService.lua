@@ -14,9 +14,9 @@ ControlService.RegisteredControllers = {}
 function ControlService:RegisterController(Name,Controller)
     self.RegisteredControllers[Name] = Controller
 end
-    
+
+ControlService:RegisterController("SmoothLocomotion", SmoothLocomotionController)
 ControlService:RegisterController("None", BaseController)
-ControlService:RegisterController("SmoothLocomotion",SmoothLocomotionController)
 
 function ControlService:UpdateCharacterReference(character)
     local LastCharacter = self.Character or nil
