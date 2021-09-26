@@ -69,6 +69,51 @@ function Utils:FindCollidablePartOnRay(StartPosition,Direction,IgnoreList,Collis
     return HitPart,EndPosition
 end
 
+function Utils:GetMotorForLimb(Limb)
+	for _, Motor in next, Limb.Parent:GetDescendants() do
+		if Motor:IsA("Motor6D") and Motor.Part1 == Limb then
+			return Motor
+		end
+	end
+end
+
+function Utils:Align(a, b, pos, rot, options)
+    local att0, att1 do
+        att0 = a:IsA("Accessory") and Instance.new("Attachment", a.Handle) or Instance.new("Attachment", a)
+        att1 = Instance.new("Attachment"); 
+        att1.Position = pos or Vector3.new(0,0,0); att1.Orientation = rot or Vector3.new(0,0,0); att1.Parent = b
+    end
+    
+    local Handle = a:IsA("Accessory") and a.Handle or a;
+    Handle.Massless = true;
+    Handle.CanCollide = false;
+    
+    if a:IsA("Accessory") then 
+        Handle.AccessoryWeld:Destroy()  
+    else
+        local Motor = self:GetMotorForLimb(a); if Motor then Motor:Destroy() end
+    end
+
+    local al = Instance.new("AlignPosition");
+    al.Attachment0 = att0; al.Attachment1 = att1;
+    al.RigidityEnabled = true;
+    al.ReactionForceEnabled = options.reactionforce or false;
+    al.ApplyAtCenterOfMass = true;
+    al.MaxForce = 10000000;
+    al.MaxVelocity = math.huge/9e110;
+    al.Responsiveness = options.resp or 200;
+    al.Parent = Handle
+    local ao = Instance.new("AlignOrientation");    
+    ao.Attachment0 = att0; ao.Attachment1 = att1;
+    ao.RigidityEnabled = false;
+    ao.ReactionTorqueEnabled = options.reactiontorque or true;
+    ao.PrimaryAxisOnly = false;
+    ao.MaxTorque = 10000000;
+    ao.MaxAngularVelocity = math.huge/9e110;
+    ao.Responsiveness = 200;
+    ao.Parent = Handle
+end
+
 function Utils:VRCharacter(Character, trans)
     Character.Archivable = true
     local VRCharacter = Character:Clone()
