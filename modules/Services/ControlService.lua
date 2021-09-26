@@ -6,7 +6,7 @@ function getModule(module)
     return module
 end
 
-local BaseController = getModule("Controllers")
+local BaseController, SmoothLocomotionController = getModule("Controllers")
 
 local ControlService = {}
 ControlService.RegisteredControllers = {}
@@ -16,6 +16,7 @@ function ControlService:RegisterController(Name,Controller)
 end
     
 ControlService:RegisterController("None", BaseController)
+ControlService:RegisterController("SmoothLocomotion",SmoothLocomotionController)
 
 function ControlService:UpdateCharacterReference(character)
     local LastCharacter = self.Character or nil
@@ -50,7 +51,6 @@ end
 
     
     --ControlServiceModule:RegisterController("Teleport",TeleportController.new())
-    --ControlServiceModule:RegisterController("SmoothLocomotion",SmoothLocomotionController.new())
 
 
 
