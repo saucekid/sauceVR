@@ -1,5 +1,7 @@
 local Utils = {}
 
+local PhysicsService = game:GetService("PhysicsService")
+
 function Utils.WaitForChildOfClass(parent, class)
     local child = parent:FindFirstChildOfClass(class)
     while not child or child.ClassName ~= class do
