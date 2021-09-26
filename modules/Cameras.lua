@@ -8,7 +8,7 @@ local VRService = game:GetService("VRService")
 -----====================={Default Camera}
 local DefaultCamera = {}
 
-function DefaultCamera:Enable(self)
+function DefaultCamera:Enable()
     self.TransparencyEvents = {}
     if Players.LocalPlayer.Character then
         local Transparency = 1
@@ -43,7 +43,7 @@ function DefaultCamera:Enable(self)
     end))
 end
 
-function DefaultCamera:Disable(self)
+function DefaultCamera:Disable()
     if self.TransparencyEvents then
         for _,Event in pairs(self.TransparencyEvents) do
             Event:Disconnect()
