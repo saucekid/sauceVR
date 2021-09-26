@@ -34,7 +34,7 @@ function Utils:FindCollidablePartOnRay(StartPosition,Direction,IgnoreList,Collis
 
     --Create the ignore list.
     local Camera = Workspace.CurrentCamera
-    local NewIgnoreList = {Camera}
+    local NewIgnoreList = {Camera, VRCharacter}
     if typeof(IgnoreList) == "Instance" then
         table.insert(NewIgnoreList,IgnoreList)
     elseif typeof(IgnoreList) == "table" then
@@ -133,6 +133,7 @@ function Utils:VRCharacter(Character, trans)
         end
     end 
     VRCharacter:SetPrimaryPartCFrame(Character.PrimaryPart.CFrame)
+    VRCharacter.Name = "VRCharacter"
     VRCharacter.Parent = workspace.Terrain
 
     return VRCharacter
