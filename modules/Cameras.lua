@@ -1,4 +1,5 @@
 local USE_HEAD_LOCKED_WORKAROUND = true
+local THIRD_PERSON_ZOOM = 10
 
 local Workspace = game:GetService("Workspace")
 local Players = game:GetService("Players")
