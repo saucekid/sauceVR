@@ -25,7 +25,7 @@ local R2 = Instance.new("Vector3Value",workspace.Terrain)
 local L2 = Instance.new("Vector3Value",workspace.Terrain)
 
 
-local Ignore = {Players.LocalPlayer.Character, workspace.Terrain:WaitForChild("VRCharacter")}
+local Ignore = {Players.LocalPlayer.Character, VRCharacter}
 
 
 
