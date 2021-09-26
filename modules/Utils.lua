@@ -69,14 +69,18 @@ function Utils:FindCollidablePartOnRay(StartPosition,Direction,IgnoreList,Collis
     return HitPart,EndPosition
 end
 
-function Utils:VRCharacter(Character)
+function Utils:VRCharacter(Character, trans)
     Character.Archivable = true
     local VRCharacter = Character:Clone()
     self.NoCollideModel(VRCharacter, Character)
     for _,v in pairs(VRCharacter:GetDescendants()) do
         if v:IsA("BasePart") then 
             v.CanCollide = false
-            v.Transparency = .5 
+            v.Transparency = trans or 1
+        elseif v:IsA("Decal") then
+            v.Transparency = trans or 1
+        elseif v:IsA("ParticleEmitter") then
+            v:Destroy()
         end
     end 
     VRCharacter:SetPrimaryPartCFrame(Character.PrimaryPart.CFrame)

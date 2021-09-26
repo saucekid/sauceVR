@@ -257,25 +257,17 @@ function char.new(CharacterModel)
         end
     end
     
-    --[[
-    Sets the transform of a motor.
-    --]]
     function Character:SetTransform(MotorName,AttachmentName,StartLimbName,EndLimbName,StartCFrame,EndCFrame)
         self:SetCFrameProperty(self.Motors[MotorName],"Transform",(StartCFrame * self.Attachments[StartLimbName][AttachmentName].CFrame):Inverse() * (EndCFrame * self.Attachments[EndLimbName][AttachmentName].CFrame))
     end
     
-    --[[
-    Updates the character from the inputs.
-    --]]
+
     function Character:UpdateFromInputs(HeadControllerCFrame,LeftHandControllerCFrame,RightHandControllerCFrame)
         --Return if the humanoid is dead.
         if self.Humanoid.Health <= 0 then
             return
         end
-    
-        --Call the other method if there is a SeatPart.
-        --The math below is not used while in seats due to assumptions made while standing.
-        --The CFrames will already be in local space from the replication.
+
         local SeatPart = self:GetHumanoidSeatPart()
         if SeatPart then
             self:UpdateFromInputsSeated(HeadControllerCFrame,LeftHandControllerCFrame,RightHandControllerCFrame)
@@ -289,11 +281,7 @@ function char.new(CharacterModel)
         local JointCFrames = self.Torso:GetAppendageJointCFrames(LowerTorsoCFrame,UpperTorsoCFrame)
         local LeftUpperArmCFrame,LeftLowerArmCFrame,LeftHandCFrame = self.LeftArm:GetAppendageCFrames(JointCFrames["LeftShoulder"],LeftHandControllerCFrame)
         local RightUpperArmCFrame,RightLowerArmCFrame,RightHandCFrame = self.RightArm:GetAppendageCFrames(JointCFrames["RightShoulder"],RightHandControllerCFrame)
-    
-        --Set the character CFrames.
-        --HumanoidRootParts must always face up. This makes the math more complicated.
-        --Setting the CFrame directly to something not facing directly up will result in the physics
-        --attempting to correct that within the next frame, causing the character to appear to move.
+
         local LeftFoot,RightFoot = self.FootPlanter:GetFeetCFrames()
         local LeftUpperLegCFrame,LeftLowerLegCFrame,LeftFootCFrame = self.LeftLeg:GetAppendageCFrames(JointCFrames["LeftHip"],LeftFoot * CFrame.Angles(0,math.pi,0))
         local RightUpperLegCFrame,RightLowerLegCFrame,RightFootCFrame = self.RightLeg:GetAppendageCFrames(JointCFrames["RightHip"],RightFoot * CFrame.Angles(0,math.pi,0))
@@ -317,18 +305,11 @@ function char.new(CharacterModel)
         self:SetTransform("LeftShoulder","LeftShoulderRigAttachment","UpperTorso","LeftUpperArm",UpperTorsoCFrame,LeftUpperArmCFrame)
         self:SetTransform("LeftElbow","LeftElbowRigAttachment","LeftUpperArm","LeftLowerArm",LeftUpperArmCFrame,LeftLowerArmCFrame)
         self:SetTransform("LeftWrist","LeftWristRigAttachment","LeftLowerArm","LeftHand",LeftLowerArmCFrame,LeftHandCFrame)
-    
-        --Replicate the changes to the server.
         if Players.LocalPlayer and Players.LocalPlayer.Character == self.CharacterModel then
             self.ReplicationCFrames = {HeadControllerCFrame,LeftHandControllerCFrame,RightHandControllerCFrame}
         end
     end
-    
-    --[[
-    Updates the character from the inputs while seated.
-    The CFrames are in the local space instead of global space
-    since the seat maintains the global space.
-    --]]
+
     function Character:UpdateFromInputsSeated(HeadControllerCFrame,LeftHandControllerCFrame,RightHandControllerCFrame)
         --Return if the humanoid is dead.
         if self.Humanoid.Health <= 0 then
