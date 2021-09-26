@@ -22,6 +22,7 @@ SmoothLocomotionController.super = BaseController
 
 function SmoothLocomotionController:Enable()
     if not self.Connections then self.Connections = {} end
+    self.super.Character = self.Character
     self.super:Enable()
     VRService:SetTouchpadMode(Enum.VRTouchpad.Right,Enum.VRTouchpadMode.ABXY)
     self.ButtonADown = false
