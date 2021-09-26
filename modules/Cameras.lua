@@ -11,7 +11,7 @@ local DefaultCamera = {}
 function DefaultCamera:Enable()
     self.TransparencyEvents = {}
     if Players.LocalPlayer.Character then
-        local Transparency = settings.LocalCharacterTransparency or .5
+        local Transparency = options.LocalCharacterTransparency or .5
         table.insert(self.TransparencyEvents,Players.LocalPlayer.Character.DescendantAdded:Connect(function(Part)
             if Part:IsA("BasePart") then
                 if Part.Parent:IsA("Accoutrement") then

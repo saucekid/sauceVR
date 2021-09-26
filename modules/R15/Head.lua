@@ -27,7 +27,7 @@ function headModule.new(Headl)
     
         --Clamp the new neck tilt.
         local NewNeckTilt = 0
-        local MaxNeckTilt = settings.MaxNeckTilt or math.rad(60)
+        local MaxNeckTilt = options.MaxNeckTilt or math.rad(60)
         if BaseNeckTilt > MaxNeckTilt then
             NewNeckTilt = BaseNeckTilt - MaxNeckTilt
         elseif BaseNeckTilt < -MaxNeckTilt then
@@ -39,7 +39,7 @@ function headModule.new(Headl)
             while RotationDifference > math.pi do RotationDifference = RotationDifference - (2 * math.pi) end
             while RotationDifference < -math.pi do RotationDifference = RotationDifference + (2 * math.pi) end
     
-            local MaxNeckSeatedRotation = settings.MaxNeckSeatedRotationor math.rad(60)
+            local MaxNeckSeatedRotation = options.MaxNeckSeatedRotationor math.rad(60)
             if RotationDifference > MaxNeckSeatedRotation then
                 BaseNeckLook = RotationDifference - MaxNeckSeatedRotation
             elseif RotationDifference < -MaxNeckSeatedRotation then
@@ -48,7 +48,7 @@ function headModule.new(Headl)
                 BaseNeckLook = 0
             end
         else
-            local MaxNeckRotation = settings.MaxNeckRotation or math.rad(35)
+            local MaxNeckRotation = options.MaxNeckRotation or math.rad(35)
             if self.LastNeckRotationGlobal then
                 --Determine the minimum angle difference.
                 --Modulus is not used as it guarentees a positive answer, not the minimum answer, which can be negative.
