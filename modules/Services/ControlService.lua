@@ -6,7 +6,8 @@ function getModule(module)
     return module
 end
 
-local BaseController, SmoothLocomotionController = getModule("Controllers")
+local BaseController = getModule("Controllers/BaseController")
+local SmoothLocomotionController = getModule("Controllers/SmoothLocomotion")
 
 local ControlService = {}
 ControlService.RegisteredControllers = {}
