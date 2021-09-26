@@ -1,17 +1,18 @@
 local headModule = {}
 
-function GetAttachmentCFrame(Part,AttachmentName)
-    local Attachment = Part:FindFirstChild(AttachmentName)
-    return Attachment and Attachment.CFrame or CFrame.new()
-end
 
 
 function headModule.new(Headl)
     local Head = {}
-    Head.Head = Headl
+    Head.Headr = Headl
+
+    function Head:GetAttachmentCFrame(Part,AttachmentName)
+        local Attachment = Part:FindFirstChild(AttachmentName)
+        return Attachment and Attachment.CFrame or CFrame.new()
+    end
 
     function Head:GetEyesOffset()
-        return GetAttachmentCFrame(self.Head,"FaceFrontAttachment") * CFrame.new(0,self.Head.Size.Y/4,0)
+        return self:GetAttachmentCFrame(self.Headr,"FaceFrontAttachment") * CFrame.new(0,self.Headr.Size.Y/4,0)
     end
     
     function Head:GetHeadCFrame(VRHeadCFrame)
@@ -20,7 +21,7 @@ function headModule.new(Headl)
     
     function Head:GetNeckCFrame(VRHeadCFrame,TargetAngle)
         --Get the base neck CFrame and angles.
-        local BaseNeckCFrame = self:GetHeadCFrame(VRHeadCFrame) * self:GetAttachmentCFrame(self.Head,"NeckRigAttachment")
+        local BaseNeckCFrame = self:GetHeadCFrame(VRHeadCFrame) * self:GetAttachmentCFrame(self.Headr,"NeckRigAttachment")
         local BaseNeckLookVector = BaseNeckCFrame.LookVector
         local BaseNeckLook,BaseNeckTilt = math.atan2(BaseNeckLookVector.X,BaseNeckLookVector.Z) + math.pi,math.asin(BaseNeckLookVector.Y)
     
