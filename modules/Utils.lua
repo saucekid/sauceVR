@@ -34,7 +34,7 @@ function Utils:FindCollidablePartOnRay(StartPosition,Direction,IgnoreList,Collis
 
     --Create the ignore list.
     local Camera = Workspace.CurrentCamera
-    local NewIgnoreList = {Camera, VRCharacter}
+    local NewIgnoreList = {Camera, game.Players.LocalPlayer.Character}
     if typeof(IgnoreList) == "Instance" then
         table.insert(NewIgnoreList,IgnoreList)
     elseif typeof(IgnoreList) == "table" then
