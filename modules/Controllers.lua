@@ -86,14 +86,6 @@ end
 Updates the reference world CFrame.
 --]]
 function BaseController:UpdateCharacter()
-    --Return if the character is nil.
-    local CharacterChanged = self:UpdateCharacterReference()
-    if not self.Character then
-        return
-    end
-    if CharacterChanged then
-        self.object:Enable()
-    end
     self.Character.TweenComponents = false
 
     --Get the VR inputs.
