@@ -78,6 +78,10 @@ function Utils:GetMotorForLimb(Limb)
 end
 
 function Utils:Align(a, b, pos, rot, options)
+    if typeof(options) ~= 'table' then
+        options = {resp = 200, reactiontorque = false, reactionforce = false}
+    end
+
     local att0, att1 do
         att0 = a:IsA("Accessory") and Instance.new("Attachment", a.Handle) or Instance.new("Attachment", a)
         att1 = Instance.new("Attachment"); 
