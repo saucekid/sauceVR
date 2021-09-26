@@ -142,3 +142,4 @@ function SmoothLocomotionController:UpdateCharacter()
     end
 end
 
+return SmoothLocomotionController
