@@ -1,5 +1,5 @@
 local THUMBSTICK_SAMPLES_TO_RESET = 5
-local Event = game.Players.LocalPlayer:WaitForChild("EyeEvent") or Instance.new("BindableEvent", game.Players.LocalPlayer); Event.Name = "EyeEvent"
+local Event = game.Players.LocalPlayer:FindFirstChild("EyeEvent") or Instance.new("BindableEvent", game.Players.LocalPlayer); Event.Name = "EyeEvent"
 
     local VRInputService = {}
 

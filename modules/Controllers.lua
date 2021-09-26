@@ -32,7 +32,7 @@ function BaseController:Enable()
         return
     end
 
-    table.insert(self.Connections,Event:Connect(function(type)
+    table.insert(self.Connections,Event.Event:Connect(function(type)
         if type == "EyeLevel" then
             if self.LastHeadCFrame.Y > 0 then
                 self.LastHeadCFrame = CFrame.new(0,-self.LastHeadCFrame.Y,0) * self.LastHeadCFrame
