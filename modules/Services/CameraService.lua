@@ -8,12 +8,16 @@ end
 local DefaultCamera, ThirdPersonTrackCamera = getModule("Cameras")
 
 local CameraService = {}
+CameraService.RegisteredCameras = {}
 
 function CameraService:RegisterCamera(Name,Camera)
     self.RegisteredCameras[Name] = Camera
 end
-    
-    function CameraService:SetActiveCamera(Name)
+
+CameraService:RegisterCamera("Default",DefaultCamera)
+CameraService:RegisterCamera("ThirdPersonTrack",ThirdPersonTrackCamera)
+
+function CameraService:SetActiveCamera(Name)
     if self.ActiveCamera == Name then return end
     self.ActiveCamera = Name
     
@@ -34,9 +38,5 @@ function CameraService:UpdateCamera(HeadsetCFrameWorld)
         self.CurrentCamera:UpdateCamera(HeadsetCFrameWorld)
     end
 end
-
-CameraService.RegisteredCameras = {}
-CameraService:RegisterCamera("Default",DefaultCamera)
-CameraService:RegisterCamera("ThirdPersonTrack",ThirdPersonTrackCamera)
 
 return CameraService
