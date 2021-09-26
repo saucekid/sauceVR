@@ -5,7 +5,8 @@ function getModule(module)
     return module
 end
 
-local DefaultCamera, ThirdPersonTrackCamera = getModule("Cameras")
+local DefaultCamera  = getModule("Cameras/Default")
+local ThirdPersonTrackCamera = getModule("Cameras/ThirdPerson")
 
 local CameraService = {}
 CameraService.RegisteredCameras = {}

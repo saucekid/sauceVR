@@ -12,9 +12,9 @@ end
 
 function Utils.NoCollideModel(a, b)
     for _,part in pairs(a:GetDescendants()) do
-        if part:IsA("BasePart") and part.CanCollide then
+        if part:IsA("BasePart") and not part.Parent:IsA("Accessory") then
             for i,part2 in pairs(b:GetDescendants()) do
-                if part2:IsA("BasePart") and part2.CanCollide then
+                if part2:IsA("BasePart") and not part.Parent:IsA("Accessory") then
                     local noCollide = Instance.new("NoCollisionConstraint")
                     noCollide.Part0 = part
                     noCollide.Part1 = part2
