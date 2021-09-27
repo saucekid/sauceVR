@@ -1,5 +1,8 @@
 local Utils = {}
 
+local NoCollideFolder = workspace,Terrain:FindFirstChild("NoCollideCache") or Instance.new("Folder", workspace.Terrain)
+NoCollideFolder.Name = "NoCollideCache"
+
 local PhysicsService = game:GetService("PhysicsService")
 
 function Utils.WaitForChildOfClass(parent, class)
@@ -19,11 +22,23 @@ function Utils.NoCollideModel(a, b)
                     noCollide.Part0 = part
                     noCollide.Part1 = part2
                     noCollide.Name = ""
-                    noCollide.Parent = part
+                    noCollide.Parent = NoCollideCache
                 end
             end
         end
     end
+end
+
+function Utils.NoCollide(a, b)
+    local noCollide = Instance.new("NoCollisionConstraint")
+    noCollide.Part0 = a
+    noCollide.Part1 = b
+    noCollide.Name = ""
+    noCollide.Parent = NoCollideCache
+end
+
+function Utils:ClearNoCollide()
+    NoCollideFolder:ClearAllChildren()
 end
 
 function Utils:FindCollidablePartOnRay(StartPosition,Direction,IgnoreList,CollisionGroup)
