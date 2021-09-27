@@ -8,10 +8,10 @@ function getModule(module)
     return module
 end
 
-local Head = getModule("R15/Head")
-local Torso = getModule("R15/Torso")
-local Appendage = getModule("R15/Appendage")
-local FootPlanter = getModule("R15/FootPlanting")
+local Head = getModule("Character/Head")
+local Torso = getModule("Character/Torso")
+local Appendage = getModule("Character/Appendage")
+local FootPlanter = getModule("Character/FootPlanting")
 
 local char = {}
 
