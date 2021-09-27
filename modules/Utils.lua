@@ -13,7 +13,7 @@ function Utils.WaitForChildOfClass(parent, class)
     return child
 end
 
-function Utils.NoCollideModel(a, b)
+function Utils:NoCollideModel(a, b)
     for _,part in pairs(a:GetDescendants()) do
         if part:IsA("BasePart") then
             for i,part2 in pairs(b:GetDescendants()) do
@@ -22,19 +22,19 @@ function Utils.NoCollideModel(a, b)
                     noCollide.Part0 = part
                     noCollide.Part1 = part2
                     noCollide.Name = ""
-                    noCollide.Parent = NoCollideCache
+                    noCollide.Parent = NoCollideFolder
                 end
             end
         end
     end
 end
 
-function Utils.NoCollide(a, b)
+function Utils:NoCollide(a, b)
     local noCollide = Instance.new("NoCollisionConstraint")
     noCollide.Part0 = a
     noCollide.Part1 = b
     noCollide.Name = ""
-    noCollide.Parent = NoCollideCache
+    noCollide.Parent = NoCollideFolder
 end
 
 function Utils:ClearNoCollide()
@@ -136,7 +136,7 @@ end
 function Utils:VRCharacter(Character, trans)
     Character.Archivable = true
     local VRCharacter = Character:Clone()
-    self.NoCollideModel(VRCharacter, Character)
+    self:NoCollideModel(VRCharacter, Character)
     for _,v in pairs(VRCharacter:GetDescendants()) do
         if v:IsA("BasePart") then 
             v.CanCollide = false
