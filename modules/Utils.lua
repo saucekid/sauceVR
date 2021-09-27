@@ -1,6 +1,6 @@
 local Utils = {}
 
-local NoCollideFolder = workspace,Terrain:FindFirstChild("NoCollideCache") or Instance.new("Folder", workspace.Terrain)
+local NoCollideFolder = workspace.Terrain:FindFirstChild("NoCollideCache") or Instance.new("Folder", workspace.Terrain)
 NoCollideFolder.Name = "NoCollideCache"
 
 local PhysicsService = game:GetService("PhysicsService")
