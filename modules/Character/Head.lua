@@ -39,11 +39,11 @@ function headModule.new(Headl)
             while RotationDifference > math.pi do RotationDifference = RotationDifference - (2 * math.pi) end
             while RotationDifference < -math.pi do RotationDifference = RotationDifference + (2 * math.pi) end
     
-            local MaxNeckSeatedRotation = options.MaxNeckSeatedRotationor math.rad(60)
-            if RotationDifference > MaxNeckSeatedRotation then
-                BaseNeckLook = RotationDifference - MaxNeckSeatedRotation
-            elseif RotationDifference < -MaxNeckSeatedRotation then
-                BaseNeckLook = RotationDifference + MaxNeckSeatedRotation
+            local MaxNeckSeatedRotation = options.MaxNeckSeatedRotation or math.rad(60)
+            if RotationDifference > options.MaxNeckSeatedRotation then
+                BaseNeckLook = RotationDifference - options.MaxNeckSeatedRotation
+            elseif RotationDifference < -options.MaxNeckSeatedRotation then
+                BaseNeckLook = RotationDifference + options.MaxNeckSeatedRotation
             else
                 BaseNeckLook = 0
             end
