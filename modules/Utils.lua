@@ -133,6 +133,8 @@ function Utils:Align(a, b, pos, rot, options)
     ao.MaxAngularVelocity = math.huge/9e110;
     ao.Responsiveness = 200;
     ao.Parent = Handle
+
+    return att1, al, ao
 end
 
 function Utils:getClosestPlayer()
