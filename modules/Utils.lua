@@ -1,4 +1,6 @@
 local Utils = {}
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
 local NoCollideFolder = workspace.Terrain:FindFirstChild("NoCollideCache") or Instance.new("Folder", workspace.Terrain)
 NoCollideFolder.Name = "NoCollideCache"
@@ -131,6 +133,28 @@ function Utils:Align(a, b, pos, rot, options)
     ao.MaxAngularVelocity = math.huge/9e110;
     ao.Responsiveness = 200;
     ao.Parent = Handle
+end
+
+function Utils:getClosestPlayer()
+    local Character = LocalPlayer.Character
+    local HumanoidRootPart = Character and Character:FindFirstChild("HumanoidRootPart")
+    if not (Character or HumanoidRootPart) then return end
+
+    local TargetDistance = math.huge
+    local Target
+
+    for i,v in ipairs(Players:GetPlayers()) do
+        if v ~= LocalPlayer and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
+            local TargetHRP = v.Character.HumanoidRootPart
+            local mag = (HumanoidRootPart.Position - TargetHRP.Position).magnitude
+            if mag < TargetDistance then
+                TargetDistance = mag
+                Target = v
+            end
+        end
+    end
+
+    return Target, TargetDistance
 end
 
 function Utils:VRCharacter(Character, trans)
