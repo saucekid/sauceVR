@@ -1,7 +1,14 @@
 getgenv().options = {
+    --Bodyslots or Default (Bodyslots is buggy and)
+    Inventory = "Bodyslots" ,
+    
+    --None, SmoothLocomotion, or teleport (These can be changed in settings)
     DefaultMovementMethod = "None",
+    
+    --None, SmoothLocomotion, or teleport (These can be changed in settings)
     DefaultCameraOption = "Default",
     
+--==[Advanced Options]
     --Character Transparency in First Person
     LocalCharacterTransparency = 0.5,
 
@@ -14,6 +21,16 @@ getgenv().options = {
     
     --Maximum angle the center of the torso can bend.
     MaxTorsoBend = math.rad(10),
+    
+    --Inventory Slot Positions (Relative to HumanoidRootPart)
+    InventorySlots = { 
+        [1] = CFrame.new(-1,-.25,0) * CFrame.Angles(0,math.rad(0),0),
+        [2] = CFrame.new(1,-.25,0) * CFrame.Angles(0,math.rad(90),0),
+        [3] = CFrame.new(0,0,.5) * CFrame.Angles(0,math.rad(90),0),
+    },
+        
+    --Velocity of part (more = more jitter, but more stable)
+    NetlessVelocity = Vector3.new(0,-45,0)
 }
 
 
@@ -32,6 +49,8 @@ local RunService = game:GetService("RunService");
 local HttpService = game:GetService("HttpService");
 local HapticService = game:GetService("HapticService");
 local UserInputService = game:GetService("UserInputService");
+local ContextActionService = game:GetService("ContextActionService");
+local StarterGui = game:GetService("StarterGui");
 local CurrentCamera = workspace.CurrentCamera;
 local LocalPlayer = game.Players.LocalPlayer;
 
@@ -39,13 +58,18 @@ local LocalPlayer = game.Players.LocalPlayer;
 settings().Physics.AllowSleep = false 
 settings().Physics.PhysicsEnvironmentalThrottle = Enum.EnviromentalPhysicsThrottle.Disabled
 
+--[Disable Default VR Controls]
+StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
+ContextActionService:BindActionAtPriority("DisableInventoryKeys", function()
+	return Enum.ContextActionResult.Sink
+end, false, Enum.ContextActionPriority.High.Value, Enum.KeyCode.ButtonR1, Enum.KeyCode.ButtonL1, Enum.KeyCode.ButtonR2, Enum.KeyCode.ButtonL2)
 
 
 --=========[Modules]
 function getModule(module)
     assert(type(module) == "string", "string only")
     local path = "https://raw.githubusercontent.com/saucekid/sauceVR/main/modules/"
-    local module =  loadstring(game:HttpGetAsync(path.. module.. ".lua"))()
+    local module = loadstring(game:HttpGetAsync(path.. module.. ".lua"))()
     return module
 end
 
@@ -57,78 +81,29 @@ getgenv().CameraService = getModule("Services/CameraService");
 getgenv().ControlService = getModule("Services/ControlService");
 getgenv().VRInputService = getModule("Services/VRInputService");
 
---=========[VR script]
+--=========[Other Functions]
 local function cframeAlign(a, b, pos)
     local Motor = Utils:GetMotorForLimb(a); if Motor then Motor:Destroy() end
-    Event(RunService.Heartbeat:Connect(function()
-        a.CFrame = pos and b.CFrame * pos or b.CFrame
-    end))
-    Event(RunService.Stepped:Connect(function()
-        a.CFrame = pos and b.CFrame * pos or b.CFrame
-    end))
+    local function doAlign()
+        pcall(function()
+            if b:IsA("Attachment") then
+                a.CFrame = pos and b.WorldCFrame * pos or b.WorldCFrame
+            else
+                a.CFrame = pos and b.CFrame * pos or b.CFrame
+            end
+        end)
+    end
+    Event(RunService.Stepped:Connect(doAlign))
+    Event(RunService.Heartbeat:Connect(doAlign))
+    Event(RunService.RenderStepped:Connect(doAlign))
 end
 
-local function align(a, b, pos, rot, settings)
-    if typeof(settings) ~= 'table' then
-        settings = {type = "None", resp = 200, length = 5, reactiontorque = false, reactionforce = false}
-    end
-    local a1
-    local att0, att1 do
-        att0 = a:IsA("Accessory") and Instance.new("Attachment", a.Handle) or Instance.new("Attachment", a)
-        att1 = Instance.new("Attachment", b); 
-        att1.Position = pos or Vector3.new(0,0,0); att1.Orientation = rot or Vector3.new(0,0,0);
-    end
-    
-    local Handle = a:IsA("Accessory") and a.Handle or a;
-    Handle.Massless = true;
-    Handle.CanCollide = false;
-    
-    if a:IsA("Accessory") then Handle.AccessoryWeld:Destroy()  Handle:FindFirstChildOfClass("SpecialMesh"):Destroy()end
-    local Motor = Utils:GetMotorForLimb(a); if Motor then Motor:Destroy() end
-    
-    if settings.type == "rope" then 
-        att0.Position = rot
-        al = Instance.new("RopeConstraint", Handle);
-        al.Attachment0 = att0; al.Attachment1 = att1;
-        al.Length = settings.length or 0.5
-    elseif settings.type == "ball" then
-        att0.Position = rot
-        al = Instance.new("BallSocketConstraint", Handle)
-        al.Attachment0 = att0
-        al.Attachment1 = att1
-        al.Restitution = 1
-        al.LimitsEnabled = true
-        al.MaxFrictionTorque = 10
-        al.TwistLimitsEnabled = true
-        al.UpperAngle = 50
-        al.TwistLowerAngle = 10
-        al.TwistUpperAngle = -100
-    elseif settings.type == "hinge" then
-        att0.Position = rot
-        al = Instance.new("HingeConstraint", Handle)
-        al.Attachment0 = att0
-        al.Attachment1 = att1
-    else
-        al = Instance.new("AlignPosition", Handle);
-        al.Attachment0 = att0; al.Attachment1 = att1;
-        al.RigidityEnabled = true;
-        al.ReactionForceEnabled = settings.reactionforce or false;
-        al.ApplyAtCenterOfMass = true;
-        al.MaxForce = 10000000;
-        al.MaxVelocity = math.huge/9e110;
-        al.Responsiveness = options.resp or 200;
-        local ao = Instance.new("AlignOrientation", Handle);    
-        ao.Attachment0 = att0; ao.Attachment1 = att1;
-        ao.RigidityEnabled = false;
-        ao.ReactionTorqueEnabled = settings.reactiontorque or true;
-        ao.PrimaryAxisOnly = false;
-        ao.MaxTorque = 10000000;
-        ao.MaxAngularVelocity = math.huge/9e110;
-        ao.Responsiveness = 200;
-    end
-    return att1, a1
+local function Netless(part)
+    if not part:IsA("BasePart") then return end
+    part.Velocity = options.NetlessVelocity
 end
 
+--=========[VR script]
 function StartVR()
     coroutine.wrap(function()
         for i = 1,600 do
@@ -140,7 +115,18 @@ function StartVR()
             wait(0.1)
         end
     end)()
-
+    
+    for i,tool in pairs(LocalPlayer.Backpack:GetChildren()) do
+        if tool:IsA("Tool") then 
+            task.spawn(function() 
+                tool.Parent = Character 
+                task.wait(.1) 
+                tool.Parent = LocalPlayer.Backpack 
+                print('totasd')
+            end) 
+        end
+    end
+    
     local Character, Humanoid, RigType do
         Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
         Humanoid = Utils.WaitForChildOfClass(Character, "Humanoid")
@@ -158,117 +144,359 @@ function StartVR()
                 connection:Disable()
             end
         end
-
-        getgenv().VRCharacter = Utils:VRCharacter(Character, 1)
         
-        local Weld = Instance.new("Motor6D")
-        Weld.Part0 = Humanoid.RootPart
-        Weld.Part1 = VRCharacter.Humanoid.RootPart
-        Weld.Parent = VRCharacter.Humanoid.RootPart
+        if RigType == "R15" then
+            getgenv().VRCharacter = Utils:VRCharacter(Character, 1)
+        else
+            getgenv().VRCharacter = game:GetObjects("rbxassetid://7307187904")[1]
+            for i,v in pairs(VRCharacter:GetDescendants()) do
+                if v:IsA("BasePart") or v:IsA("Decal") then
+                    v.Transparency = .4
+                end
+            end
+            VRCharacter.Parent = Character
+            VRCharacter:SetPrimaryPartCFrame(Humanoid.RootPart.CFrame)
+        end
+        
+        cframeAlign(VRCharacter.Humanoid.RootPart, Humanoid.RootPart, CFrame.new(0,.4,0))
+        local bv = Instance.new("BodyVelocity")
+        bv.Velocity = Vector3.new(0,0,0); bv.MaxForce = Vector3.new(math.huge,math.huge,math.huge); bv.P = 9000; bv.Parent = VRCharacter.Humanoid.RootPart
     
+        Character.HumanoidRootPart.CustomPhysicalProperties = PhysicalProperties.new(100, 100, 0, 100,100)
         VRCharacter.Humanoid.AutoRotate = false
         VRCharacter.Humanoid.PlatformStand = true
+        Humanoid.RootPart.Anchored = true
+        Humanoid:SetStateEnabled(12,false)
     end
     
-    if RigType == "R15" then
-        local CharacterHandler = getModule("Character/Character").new(VRCharacter)
-        CharacterHandler.Humanoid = Humanoid
-        
-        ControlService:UpdateCharacterReference(CharacterHandler)
-        ControlService:SetActiveController("SmoothLocomotion")
-       -- CameraService:SetActiveCamera("Default")
 
+    --[Hand Collision]
+    local fakerightarm, fakeleftarm, RHA, LHA, RgrabWeld, LgrabWeld, RgrabAtt, LgrabAtt do
+        function createArm(name, cframe, size)
+            local arm = Instance.new("Part")
+            arm.CFrame = cframe
+            arm.Name = name 
+            arm.Size = size
+            arm.Transparency = .4
+            arm.CustomPhysicalProperties = PhysicalProperties.new(50, 1000, -100, 100,100)
+            arm.Parent = Character
+            
+            local ap = Instance.new("AlignPosition", arm);
+            ap.RigidityEnabled = false; ap.ReactionForceEnabled = true; ap.ApplyAtCenterOfMass = false; ap.MaxForce = 100000000; ap.MaxVelocity = math.huge/9e110; ap.Responsiveness = 200; ap.Parent = arm
+            local ao = Instance.new("AlignOrientation");
+            ao.RigidityEnabled = false; ao.ReactionTorqueEnabled = false; ao.PrimaryAxisOnly = false; ao.MaxTorque = 100000000; ao.MaxAngularVelocity = math.huge/9e110; ao.Responsiveness = 200; ao.Parent = arm
+            local att = Instance.new("Attachment", arm)
+            
+            local rootAtt = Instance.new("Attachment", Character.HumanoidRootPart)
+
+            local grabWeld = Instance.new("WeldConstraint", arm); grabWeld.Part0 = arm
+            local grabAtt = Instance.new("Attachment", arm)
+            
+            ap.Attachment0 = att; ap.Attachment1 = rootAtt
+            ao.Attachment0 = att; ao.Attachment1 = rootAtt
+            
+            return arm, ap, ao, att, rootAtt, grabWeld, grabAtt
+        end
+        
+        fakeleftarm, lAO, lAO, lAtt, LHA, lGrabWeld, lGrabAtt = createArm("Fake Left", VRCharacter["LeftHand"].CFrame, VRCharacter["LeftHand"].Size)
+        fakerightarm, rAO, rAO, rAtt, RHA, rGrabWeld, rGrabAtt = createArm("Fake Right", VRCharacter["RightHand"].CFrame, VRCharacter["RightHand"].Size)
+        
+        Utils:NoCollide(fakeleftarm, fakerightarm)
+        
+        Event(fakerightarm.Touched:Connect(function(part)
+            if fakerightarm:CanCollideWith(part) and not part:IsDescendantOf(Character) and not part:IsDescendantOf(VRCharacter) then
+                HapticService:SetMotor(Enum.UserInputType.Gamepad1, Enum.VibrationMotor.RightHand, (fakerightarm.Velocity - part.Velocity).Magnitude / 10)
+    		    wait()
+    		    HapticService:SetMotor(Enum.UserInputType.Gamepad1, Enum.VibrationMotor.RightHand, 0)
+            end
+        end))
+        
+        Event(fakeleftarm.Touched:Connect(function(part)
+            if fakeleftarm:CanCollideWith(part) and not part:IsDescendantOf(Character) and not part:IsDescendantOf(VRCharacter) then
+                HapticService:SetMotor(Enum.UserInputType.Gamepad1, Enum.VibrationMotor.LeftHand, (fakeleftarm.Velocity - part.Velocity).Magnitude / 10)
+    		    wait()
+    		    HapticService:SetMotor(Enum.UserInputType.Gamepad1, Enum.VibrationMotor.LeftHand, 0)
+            end
+        end))
+    end
+    
+    --[Updating VR Character]
+    local VirtualCharacter do
+        VirtualCharacter = getModule("Character/Character").new(VRCharacter)
+        VirtualCharacter.Humanoid = Humanoid
+        VirtualCharacter.Parts.HumanoidRootPart = Humanoid.RootPart
+        
+        ControlService:UpdateCharacterReference(VirtualCharacter)
+        ControlService:SetActiveController("SmoothLocomotion")
+        CameraService:SetActiveCamera("ThirdPersonTrack")
+        
         RunService:BindToRenderStep("sauceVRCharacterModelUpdate",Enum.RenderPriority.Camera.Value - 1,function()
             ControlService:UpdateCharacter()
+            RHA.WorldCFrame = VRCharacter["RightHand"].CFrame 
+            LHA.WorldCFrame = VRCharacter["LeftHand"].CFrame
         end)
-        
-    elseif RigType == "R6" then
-        
     end
-    
+
+    --[Replicating]
     local DisabledParts = {}
     DisabledParts["HumanoidRootPart"] = true
+    DisabledParts["Fake Right"] = true
+    DisabledParts["Fake Left"] = true
     DisabledParts["Head"] = options.HeadMovement and false or true
     
-    for _, part in pairs(Character:GetChildren()) do
+    for _, part in pairs(VRCharacter:GetDescendants()) do
         if part:IsA("BasePart") then
-            Event(RunService.Stepped:connect(function()
+            Utils:NoCollide(part, fakeleftarm)
+            Utils:NoCollide(part, fakerightarm)
+            Event(RunService.Stepped:Connect(function()
                 part.CanCollide = false
-                VRCharacter:FindFirstChild(part.Name)
             end))
-            
-            if not DisabledParts[part.Name] then
-                cframeAlign(part, VRCharacter:FindFirstChild(part.Name))
+        end
+    end
 
-                local bv = Instance.new("BodyVelocity", part)
-                bv.Velocity = Vector3.new(0,0,0)
-                bv.MaxForce = Vector3.new(math.huge,math.huge,math.huge)
-                bv.P = 10000
-                
-                Event(RunService.Heartbeat:connect(function()
-                    part.AssemblyLinearVelocity = Vector3.new(0,0,0)
+    for _, part in pairs(Character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            if not part.Name:find("Fake") then
+                Utils:NoCollide(part, fakeleftarm)
+                Utils:NoCollide(part, fakerightarm)
+                Event(RunService.Stepped:Connect(function()
+                    part.CanCollide = false
                 end))
             end
+            if not DisabledParts[part.Name] and not part.Parent:IsA("Accessory") then 
+                local bv = Instance.new("BodyVelocity")
+                bv.Velocity = Vector3.new(0,0,0)
+                bv.MaxForce = Vector3.new(math.huge,math.huge,math.huge)
+                bv.P = 9e9
+                bv.Parent = part
+                
+                if RigType == "R15" then
+                    cframeAlign(part, VRCharacter:FindFirstChild(part.Name))
+                    part.CustomPhysicalProperties = PhysicalProperties.new(0,10,10)
+                    Event(RunService.Heartbeat:connect(function()
+                        local closestPlayer, distance = Utils:getClosestPlayer()
+                        if Humanoid.RootPart.AssemblyLinearVelocity.Magnitude > 3 or closestPlayer and distance < 7 then  
+                            Netless(part)
+                        end
+                    end))
+                else
+                    --part.CustomPhysicalProperties = PhysicalProperties.new(5,10,10)
+                    Event(RunService.Heartbeat:connect(function()
+                        local closestPlayer, distance = Utils:getClosestPlayer()
+                        if Humanoid.RootPart.AssemblyLinearVelocity.Magnitude > 3 or closestPlayer and distance < 7 then  
+                            Netless(part)
+                        end
+                    end))
+                end
+            end
         end
     end
     
-
+    if RigType == "R6" then
+        Utils:Align(Character["Torso"], VRCharacter["UpperTorso"], Vector3.new(0,-.5,0))
+        cframeAlign(Character["Torso"], VRCharacter["UpperTorso"], CFrame.new(0,-.5,0))
+        
+        Utils:Align(Character["Left Leg"], VRCharacter["LeftLowerLeg"], Vector3.new(0,-.2,0))
+        cframeAlign(Character["Left Leg"], VRCharacter["LeftLowerLeg"], CFrame.new(0,-.2,0))
+        
+        Utils:Align(Character["Right Leg"], VRCharacter["RightLowerLeg"], Vector3.new(0,-.2,0))
+        cframeAlign(Character["Right Leg"], VRCharacter["RightLowerLeg"], CFrame.new(0,-.2,0))
+        
+        Utils:Align(Character["Left Arm"], fakeleftarm, Vector3.new(0,.8,0))
+        cframeAlign(Character["Left Arm"], fakeleftarm, CFrame.new(0,.8,0))
+        
+        Utils:Align(Character["Right Arm"], fakerightarm, Vector3.new(0,.8,0))
+        cframeAlign(Character["Right Arm"], fakerightarm, CFrame.new(0,.8,0))
+    end
+    
+    Humanoid.RootPart.Anchored = false
+    
+    --[Tools]
+    local tools = {}
+    function getClosestTool(hand)
+        local tool = nil
+        local maxDist = 1
+        for _,v in pairs(tools) do
+            if not v.Handle or v.Hand then continue end
+            local dist = (hand.Position - v.Handle.Position).Magnitude
+            if dist < maxDist then
+                maxDist = dist
+                tool = v
+            end
+        end
+        return tool
+    end
+    
     function doTool(tool)
         if tool:IsA("Tool") and tool:FindFirstChild("Handle") and not tool:FindFirstChild("Done") then
+            tool.ManualActivationOnly = true
+            local tag = Instance.new("StringValue", tool); tag.Name = "Done"
+            
             local realhandle = tool:FindFirstChild("Handle")
             realhandle.Massless = true
-            RunService.Heartbeat:Connect(function()
-                realhandle.Velocity = Vector3.new(45,0,0)
-            end)
-            local tag = Instance.new("StringValue", tool); tag.Name = "Done"
+            realhandle.CFrame = Character.Humanoid.RootPart.CFrame
+            
+            local bv = Instance.new("BodyVelocity")
+            bv.Velocity = Vector3.new(0,0,0); bv.MaxForce = Vector3.new(math.huge,math.huge,math.huge); bv.P = 9000; bv.Name = "Jitterless"; bv.Parent = realhandle
+            
+            Event(RunService.Heartbeat:Connect(function()
+                local closestPlayer, distance = Utils:getClosestPlayer()
+                if Humanoid.RootPart.AssemblyLinearVelocity.Magnitude > 5 or closestPlayer and distance < 7 then 
+                    Netless(realhandle)
+                end
+            end))
+            
+            local toolnum = #tools + 1
+            local slot = options.InventorySlots[toolnum]
+            tools[toolnum] = {Handle = realhandle, Hand = false}
+            
+            if not slot then return end
+                
             if RigType == "R15" then
                 realhandle.Name = "RealHandle"
-                local bv = Instance.new("BodyVelocity", realhandle)
-                bv.Velocity = Vector3.new(0,0,0); bv.MaxForce = Vector3.new(math.huge,math.huge,math.huge); bv.P = 9000; bv.Name = "Jitterless"
-                local fakehandle = realhandle:Clone(); fakehandle.Parent = tool; fakehandle.Name = "Handle"
-                fakehandle.Transparency = 1
+                
+                local lFakeHandle = realhandle:Clone(); lFakeHandle.Massless = true lFakeHandle.Name = "LeftHandle"; lFakeHandle.Parent = tool
+                lFakeHandle.Transparency = 1
+                
+                local rFakeHandle = realhandle:Clone(); rFakeHandle.Massless = true; rFakeHandle.Name = "Handle"; rFakeHandle.Parent = tool
+                rFakeHandle.Transparency = 1
+                
+                tool.Parent = Character
+                
+                local rGrip = Character.RightHand:WaitForChild("RightGrip")
+                local lGrip = rGrip:Clone(); lGrip.Part0 = Character.LeftHand; lGrip.Name = "LeftGrip"; lGrip.Part1 = lFakeHandle lGrip.Parent = Character.LeftHand; lGrip.C0 = rGrip.C0;
+                
+                local Align = slot
+                tools[toolnum].Hold = function(hold, hand)
+                    if hold then
+                        tools[toolnum].Hand = hand
+                        Align = hand == "Left" and lFakeHandle or rFakeHandle
+                    else
+                        tools[toolnum].Hand = false
+                        Align = slot
+                    end
+                end
+                
                 RunService.Stepped:Connect(function()
                     realhandle.CanCollide = false
-                    realhandle.CFrame = fakehandle.CFrame
+                    realhandle.CFrame = typeof(Align) == "CFrame" and Character.UpperTorso.CFrame * Align or Align:IsA("Part") and Align.CFrame
                 end)
             else
-                local fakehandle = realhandle:Clone(); fakehandle.Parent = tool; fakehandle.Name = "FakeHandle"; fakehandle.Transparency = 1; fakehandle.CanCollide = false
-                local fakegrip = Instance.new("Weld", rhand); fakegrip.C0 = CFrame.new(0, -1, 0, 1, 0, -0, 0, 0, 1, 0, -1, -0); fakegrip.C1 = tool.Grip; fakegrip.Part1 = fakehandle; fakegrip.Part0 = ToolTrack
-                local toolAtt = align(realhandle, ToolTrack, Vector3.new(), Vector3.new(), {reactiontorque = false, resp = 70})
-                toolAtt.WorldCFrame = fakehandle.CFrame
+                realhandle.Transparency = 0
+                local rFakeHandle = realhandle:Clone(); rFakeHandle.Parent = tool; rFakeHandle.Name = "RightFakeHandle"; rFakeHandle.Transparency = 1; rFakeHandle.CanCollide = false; rFakeHandle.Massless = true
+                local rFakeGrip = Instance.new("Weld", Character["Right Arm"]); rFakeGrip.C0 = CFrame.new(0, -1, 0, 1, 0, -0, 0, 0, 1, 0, -1, -0); rFakeGrip.C1 = tool.Grip; rFakeGrip.Part1 = rFakeHandle; rFakeGrip.Part0 = Character["Right Arm"]
+                
+                local lFakeHandle = realhandle:Clone(); lFakeHandle.Parent = tool; lFakeHandle.Name = "LeftFakeHandle"; lFakeHandle.Transparency = 1; lFakeHandle.CanCollide = false; lFakeHandle.Massless = true
+                local lFakeGrip = Instance.new("Weld", Character["Left Arm"]); lFakeGrip.C0 = CFrame.new(0, -1, 0, 1, 0, -0, 0, 0, 1, 0, -1, -0); lFakeGrip.C1 = tool.Grip; lFakeGrip.Part1 = lFakeHandle; lFakeGrip.Part0 = Character["Left Arm"]
+                
+                local rToolAtt, toolAP, toolAO = Utils:Align(realhandle, rFakeHandle, Vector3.new(), Vector3.new(), {reactiontorque = true, resp = 70})
+                local lToolAtt = Instance.new("Attachment", lFakeHandle)
+                
+                local function doAlign()
+                    pcall(function()
+                        realhandle.CFrame = toolAO.Attachment1.WorldCFrame
+                    end)
+                end
+                Event(RunService.RenderStepped:Connect(doAlign))
+                
+                local slotAtts = {}
+                for i,v in pairs(options.InventorySlots) do
+                    local Attachment = Instance.new("Attachment", Character["Torso"])
+                    Attachment.CFrame = v
+                    slotAtts[i] = Attachment
+                end
+                
+                toolAP.Attachment1 = slotAtts[toolnum]
+                toolAO.Attachment1 = slotAtts[toolnum]
+                tool.Parent = Character
+    
+                tools[toolnum].Hold = function(hold, hand)
+                    if hold then
+                        tools[toolnum].Hand = hand
+                        toolAP.Attachment1 = hand == "Left" and lToolAtt or rToolAtt
+                        toolAO.Attachment1 = hand == "Left" and lToolAtt or rToolAtt
+                    else
+                        tools[toolnum].Hand = false
+                        toolAP.Attachment1 = slotAtts[toolnum]
+                        toolAO.Attachment1 = slotAtts[toolnum]
+                    end
+                end
+                
                 RunService.Stepped:Connect(function()
                     realhandle.CanCollide = false
                 end)
             end
-            wait()
-            tool.Parent = LocalPlayer.Backpack
+            Utils:NoCollideModel(tool, Character)
         end
     end
     
-    if not R15 and rightarm:FindFirstChild("RightGrip") then rightarm.RightGrip:Destroy() end
-    for i,tool in pairs(Character:GetChildren()) do
+    if RigType == "R6" and Character["Right Arm"]:FindFirstChild("RightGrip") then Character["Right Arm"].RightGrip:Destroy() end
+    for i,tool in pairs(LocalPlayer.Backpack:GetChildren()) do
         task.spawn(doTool, tool)
     end
-    Character.ChildAdded:Connect(doTool)
+    Event(Character.ChildAdded:Connect(doTool))
+    Event(LocalPlayer.Backpack.ChildAdded:Connect(doTool))
+    
+    
+    --[Controls]
+    Event(UserInputService.InputBegan:connect(function(key)
+        if key.KeyCode == Enum.KeyCode.ButtonR1 or key.KeyCode == Enum.KeyCode.E then
+            local tool = getClosestTool(fakerightarm)
+            if tool then
+                tool.Hold(true, "Right")
+            end
+        elseif key.KeyCode == Enum.KeyCode.ButtonL1 or key.KeyCode == Enum.KeyCode.Q then
+            local tool = getClosestTool(fakeleftarm)
+            if tool then
+                tool.Hold(true, "Left")
+            end
+        elseif key.KeyCode == Enum.KeyCode.ButtonL2 or key.UserInputType == Enum.UserInputType.MouseButton1 then
+            for _,tool in pairs(tools) do
+                if tool.Hand == "Left" and tool.Handle then
+                    tool.Handle.Parent:Activate()
+                    print("Left")
+                end
+            end
+        elseif key.KeyCode == Enum.KeyCode.ButtonR2 or key.UserInputType == Enum.UserInputType.MouseButton2 then
+            for _,tool in pairs(tools) do
+                if tool.Hand == "Right" and tool.Handle then
+                    tool.Handle.Parent:Activate()
+                    print("Right")
+                end
+            end
+        end
+    end))
 
-
+    Event(UserInputService.InputEnded:connect(function(key)
+        if key.KeyCode == Enum.KeyCode.ButtonR1 or key.KeyCode == Enum.KeyCode.E then
+            for _,tool in pairs(tools) do
+                if tool.Hand == "Right" then
+                    tool.Hold(false)
+                end
+            end
+        elseif key.KeyCode == Enum.KeyCode.ButtonL1 or key.KeyCode == Enum.KeyCode.Q then
+            for _,tool in pairs(tools) do
+                if tool.Hand == "Left" then
+                    tool.Hold(false)
+                end
+            end
+        end
+    end))
+    
     --[Death]
     function died()
         Humanoid.Health = 0
         VRCharacter.Humanoid.Health = 0 
-        Humanoid:Destroy() --stop perm death
+        RunService:UnbindFromRenderStep("sauceVRCharacterModelUpdate")
+        if options.HeadMovement then Humanoid:Destroy() end--stop perm death
+        Event:Clear()
         task.delay(6, function()
             VRCharacter:Destroy()
-            Event:Clear()
         end)
     end
     
-    local resetBindable = Instance.new("BindableEvent")
-    resetBindable.Event:connect(died)
-    
-    game:GetService("StarterGui"):SetCore("ResetButtonCallback", resetBindable)
-    VRCharacter.Humanoid.Died:Connect(died)
-    Humanoid.Died:Connect(died)
+    Event(VRCharacter.Humanoid.Died:Connect(died))
+    Event(Humanoid.Died:Connect(died))
 end
 
 StartVR()
