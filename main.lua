@@ -122,7 +122,6 @@ function StartVR()
                 tool.Parent = Character 
                 task.wait(.1) 
                 tool.Parent = LocalPlayer.Backpack 
-                print('totasd')
             end) 
         end
     end
@@ -151,14 +150,16 @@ function StartVR()
             getgenv().VRCharacter = game:GetObjects("rbxassetid://7307187904")[1]
             for i,v in pairs(VRCharacter:GetDescendants()) do
                 if v:IsA("BasePart") or v:IsA("Decal") then
-                    v.Transparency = .4
+                    v.Transparency = 0
                 end
             end
-            VRCharacter.Parent = Character
+            VRCharacter.Parent = workspace.Terrain
             VRCharacter:SetPrimaryPartCFrame(Humanoid.RootPart.CFrame)
         end
         
-        cframeAlign(VRCharacter.Humanoid.RootPart, Humanoid.RootPart, CFrame.new(0,.4,0))
+        local bg = Instance.new("BodyGyro", Humanoid.RootPart); bg.MaxTorque = Vector3.new(17000,17000,17000); bg.P = 17000
+        
+        cframeAlign(VRCharacter.Humanoid.RootPart, Humanoid.RootPart)
         local bv = Instance.new("BodyVelocity")
         bv.Velocity = Vector3.new(0,0,0); bv.MaxForce = Vector3.new(math.huge,math.huge,math.huge); bv.P = 9000; bv.Parent = VRCharacter.Humanoid.RootPart
     
@@ -228,7 +229,7 @@ function StartVR()
         
         ControlService:UpdateCharacterReference(VirtualCharacter)
         ControlService:SetActiveController("SmoothLocomotion")
-        CameraService:SetActiveCamera("ThirdPersonTrack")
+        --CameraService:SetActiveCamera("Default")
         
         RunService:BindToRenderStep("sauceVRCharacterModelUpdate",Enum.RenderPriority.Camera.Value - 1,function()
             ControlService:UpdateCharacter()
@@ -250,6 +251,7 @@ function StartVR()
             Utils:NoCollide(part, fakerightarm)
             Event(RunService.Stepped:Connect(function()
                 part.CanCollide = false
+                part.CanTouch = false
             end))
         end
     end
@@ -293,14 +295,14 @@ function StartVR()
     end
     
     if RigType == "R6" then
-        Utils:Align(Character["Torso"], VRCharacter["UpperTorso"], Vector3.new(0,-.5,0))
-        cframeAlign(Character["Torso"], VRCharacter["UpperTorso"], CFrame.new(0,-.5,0))
+        Utils:Align(Character["Torso"], VRCharacter["UpperTorso"], Vector3.new(0,-.4,0))
+        cframeAlign(Character["Torso"], VRCharacter["UpperTorso"], CFrame.new(0,-.4,0))
         
-        Utils:Align(Character["Left Leg"], VRCharacter["LeftLowerLeg"], Vector3.new(0,-.2,0))
-        cframeAlign(Character["Left Leg"], VRCharacter["LeftLowerLeg"], CFrame.new(0,-.2,0))
+        Utils:Align(Character["Left Leg"], VRCharacter["LeftLowerLeg"], Vector3.new(0,0,0))
+        cframeAlign(Character["Left Leg"], VRCharacter["LeftLowerLeg"], CFrame.new(0,0,0))
         
-        Utils:Align(Character["Right Leg"], VRCharacter["RightLowerLeg"], Vector3.new(0,-.2,0))
-        cframeAlign(Character["Right Leg"], VRCharacter["RightLowerLeg"], CFrame.new(0,-.2,0))
+        Utils:Align(Character["Right Leg"], VRCharacter["RightLowerLeg"], Vector3.new(0,0,0))
+        cframeAlign(Character["Right Leg"], VRCharacter["RightLowerLeg"], CFrame.new(0,0,0))
         
         Utils:Align(Character["Left Arm"], fakeleftarm, Vector3.new(0,.8,0))
         cframeAlign(Character["Left Arm"], fakeleftarm, CFrame.new(0,.8,0))
@@ -485,14 +487,18 @@ function StartVR()
     
     --[Death]
     function died()
+        for i,v in pairs(Character:GetDescendants()) do
+            if v:IsA("BodyVelocity") or v:IsA("AlignPosition") or v:IsA("AlignOrientation") or v.Name:find("Fake") then
+                v:Destroy()
+            elseif options.HeadMovement and v:IsA("Humanoid") then
+                v:Destroy()
+            end
+        end
         Humanoid.Health = 0
         VRCharacter.Humanoid.Health = 0 
         RunService:UnbindFromRenderStep("sauceVRCharacterModelUpdate")
-        if options.HeadMovement then Humanoid:Destroy() end--stop perm death
         Event:Clear()
-        task.delay(6, function()
-            VRCharacter:Destroy()
-        end)
+        VRCharacter:Destroy()
     end
     
     Event(VRCharacter.Humanoid.Died:Connect(died))
