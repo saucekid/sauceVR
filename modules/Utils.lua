@@ -162,7 +162,7 @@ end
 function Utils:VRCharacter(Character, trans)
     Character.Archivable = true
     local VRCharacter = Character:Clone()
-    self:NoCollideModel(VRCharacter, Character)
+    --self:NoCollideModel(VRCharacter, Character)
     for _,v in pairs(VRCharacter:GetDescendants()) do
         if v:IsA("BasePart") then 
             v.CanCollide = false
