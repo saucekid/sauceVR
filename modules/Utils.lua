@@ -127,7 +127,7 @@ function Utils:Align(a, b, pos, rot, options)
     local ao = Instance.new("AlignOrientation");    
     ao.Attachment0 = att0; ao.Attachment1 = att1;
     ao.RigidityEnabled = false;
-    ao.ReactionTorqueEnabled = options.reactiontorque or false;
+    ao.ReactionTorqueEnabled = options.reactiontorque or true;
     ao.PrimaryAxisOnly = false;
     ao.MaxTorque = 10000000;
     ao.MaxAngularVelocity = math.huge/9e110;
