@@ -150,19 +150,25 @@ function StartVR()
             getgenv().VRCharacter = game:GetObjects("rbxassetid://7307187904")[1]
             for i,v in pairs(VRCharacter:GetDescendants()) do
                 if v:IsA("BasePart") or v:IsA("Decal") then
-                    v.Transparency = 0
+                    v.Transparency = 1
                 end
             end
             VRCharacter.Parent = workspace.Terrain
             VRCharacter:SetPrimaryPartCFrame(Humanoid.RootPart.CFrame)
         end
         
-        local bg = Instance.new("BodyGyro", Humanoid.RootPart); bg.MaxTorque = Vector3.new(17000,17000,17000); bg.P = 17000
-        
-        cframeAlign(VRCharacter.Humanoid.RootPart, Humanoid.RootPart)
+        Humanoid.RootPart.Transparency = .5
+        if RigType == "R6" then
+            cframeAlign(VRCharacter.Humanoid.RootPart, Humanoid.RootPart,  CFrame.new(0,0,-1.1))
+        else
+            cframeAlign(VRCharacter.Humanoid.RootPart, Humanoid.RootPart)
+        end
         local bv = Instance.new("BodyVelocity")
         bv.Velocity = Vector3.new(0,0,0); bv.MaxForce = Vector3.new(math.huge,math.huge,math.huge); bv.P = 9000; bv.Parent = VRCharacter.Humanoid.RootPart
-    
+        
+        local bg = Instance.new("BodyGyro");
+        bg.MaxTorque = Vector3.new(17000,17000,17000); bg.P = 17000; bg.Parent = Humanoid.RootPart
+        
         Character.HumanoidRootPart.CustomPhysicalProperties = PhysicalProperties.new(100, 100, 0, 100,100)
         VRCharacter.Humanoid.AutoRotate = false
         VRCharacter.Humanoid.PlatformStand = true
@@ -225,11 +231,12 @@ function StartVR()
     local VirtualCharacter do
         VirtualCharacter = getModule("Character/Character").new(VRCharacter)
         VirtualCharacter.Humanoid = Humanoid
-        VirtualCharacter.Parts.HumanoidRootPart = Humanoid.RootPart
+        VirtualCharacter.Parts.HumanoidRootPart = RigType == "R15" and Humanoid.RootPart or VRCharacter.Humanoid.RootPart
+
         
         ControlService:UpdateCharacterReference(VirtualCharacter)
         ControlService:SetActiveController("SmoothLocomotion")
-        --CameraService:SetActiveCamera("Default")
+        CameraService:SetActiveCamera("Default")
         
         RunService:BindToRenderStep("sauceVRCharacterModelUpdate",Enum.RenderPriority.Camera.Value - 1,function()
             ControlService:UpdateCharacter()
@@ -251,7 +258,6 @@ function StartVR()
             Utils:NoCollide(part, fakerightarm)
             Event(RunService.Stepped:Connect(function()
                 part.CanCollide = false
-                part.CanTouch = false
             end))
         end
     end
@@ -488,7 +494,7 @@ function StartVR()
     --[Death]
     function died()
         for i,v in pairs(Character:GetDescendants()) do
-            if v:IsA("BodyVelocity") or v:IsA("AlignPosition") or v:IsA("AlignOrientation") or v.Name:find("Fake") then
+            if v:IsA("BodyVelocity") or v:IsA("AlignPosition") or v:IsA("AlignOrientation") then
                 v:Destroy()
             elseif options.HeadMovement and v:IsA("Humanoid") then
                 v:Destroy()
@@ -498,7 +504,9 @@ function StartVR()
         VRCharacter.Humanoid.Health = 0 
         RunService:UnbindFromRenderStep("sauceVRCharacterModelUpdate")
         Event:Clear()
-        VRCharacter:Destroy()
+        task.delay(6, function()
+            VRCharacter:Destroy()
+        end)
     end
     
     Event(VRCharacter.Humanoid.Died:Connect(died))
