@@ -43,3 +43,26 @@ getgenv().options = {
 
 loadstring(game:HttpGet("https://raw.githubusercontent.com/saucekid/sauceVR/main.lua"))();
 ```
+
+
+## Extra
+
+ROrilla VR:
+
+```lua
+options = {}
+
+options.HeadScale = 2
+options.FakeHandsTransparency = 1
+options.Bubblechat = true
+
+options.PointerRange = 10
+
+options.TurnDelay = 0.05       -- Delay in sec. for how fast you can turn left and right
+options.TurnAngle = 15         -- Change in angle left/right (degrees)
+
+options.ChatEnabled = true     -- See chat on your left hand in-game
+ options.ChatLocalRange = 70   -- Local chat range
+
+loadstring(game:HttpGet("https://raw.githubusercontent.com/saucekid/sauceVR/extra/ROrillaVR.lua"))();
+```
