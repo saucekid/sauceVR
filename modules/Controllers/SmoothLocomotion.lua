@@ -28,12 +28,12 @@ function SmoothLocomotionController:Enable()
     self.ButtonADown = false
     table.insert(self.Connections,UserInputService.InputBegan:Connect(function(Input,Processsed)
         if Processsed then return end
-        if Input.KeyCode == Enum.KeyCode.ButtonA then
+        if Input.KeyCode == options.JumpButton then
             self.ButtonADown = true
         end
     end))
     table.insert(self.Connections,UserInputService.InputEnded:Connect(function(Input)
-        if Input.KeyCode == Enum.KeyCode.ButtonA then
+        if Input.KeyCode == options.JumpButton then
             self.ButtonADown = false
         end
     end))
