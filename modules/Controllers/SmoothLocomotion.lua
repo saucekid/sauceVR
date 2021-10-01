@@ -33,7 +33,7 @@ function SmoothLocomotionController:Enable()
         end
     end))
     table.insert(self.Connections,UserInputService.InputEnded:Connect(function(Input)
-        if Input.KeyCode == options.JumpButton then
+        if Input.KeyCode == Enum.KeyCode.ButtonA then
             self.ButtonADown = false
         end
     end))
@@ -76,12 +76,9 @@ function SmoothLocomotionController:UpdateCharacter()
     local ForwardDirection = (WDown and 1 or 0) + (SDown and -1 or 0) + ThumbstickPosition.Y
     local SideDirection = (DDown and 1 or 0) + (ADown and -1 or 0) + ThumbstickPosition.X
 
-    --Move the player in that direction.
-    if self.Character.FakeHumanoid then
-        self.Character.FakeHumanoid:Move(Vector3.new(SideDirection,0,-ForwardDirection),true)
-    else
-        Players.LocalPlayer:Move(Vector3.new(SideDirection,0,-ForwardDirection),true)
-    end
+
+    Players.LocalPlayer:Move(Vector3.new(SideDirection,0,-ForwardDirection),true)
+
 
 
     if not self.Character.Humanoid.Sit then
@@ -145,11 +142,7 @@ function SmoothLocomotionController:UpdateCharacter()
 
     --Jump the player.
     if (not UserInputService:GetFocusedTextBox() and UserInputService:IsKeyDown(Enum.KeyCode.Space)) or self.ButtonADown then
-        if self.Character.FakeHumanoid then
-            self.Character.FakeHumanoid.Jump = true
-        else
-            self.Character.Humanoid.Jump = true
-        end
+        self.Character.Humanoid.Jump = true
     end
 end
 
