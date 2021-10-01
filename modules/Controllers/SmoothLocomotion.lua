@@ -77,7 +77,12 @@ function SmoothLocomotionController:UpdateCharacter()
     local SideDirection = (DDown and 1 or 0) + (ADown and -1 or 0) + ThumbstickPosition.X
 
     --Move the player in that direction.
-    Players.LocalPlayer:Move(Vector3.new(SideDirection,0,-ForwardDirection),true)
+    if self.Character.FakeHumanoid then
+        self.Character.FakeHumanoid:Move(Vector3.new(SideDirection,0,-ForwardDirection),true)
+    else
+        Players.LocalPlayer:Move(Vector3.new(SideDirection,0,-ForwardDirection),true)
+    end
+
 
     if not self.Character.Humanoid.Sit then
         local InputPosition = VRInputService:GetThumbstickPosition(Enum.KeyCode.Thumbstick2)
@@ -140,7 +145,11 @@ function SmoothLocomotionController:UpdateCharacter()
 
     --Jump the player.
     if (not UserInputService:GetFocusedTextBox() and UserInputService:IsKeyDown(Enum.KeyCode.Space)) or self.ButtonADown then
-        self.Character.Humanoid.Jump = true
+        if self.Character.FakeHumanoid then
+            self.Character.FakeHumanoid.Jump = true
+        else
+            self.Character.Humanoid.Jump = true
+        end
     end
 end
 
