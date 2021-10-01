@@ -47,7 +47,7 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/saucekid/sauceVR/main
 
 ## Extra
 
-ROrilla VR:
+**ROrilla:**
 
 ```lua
 options = {}
