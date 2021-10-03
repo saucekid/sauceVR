@@ -119,6 +119,15 @@ LocalPlayer.OnTeleport:Connect(function(State)
 end)
 
 --=========[Functions]==========--
+function getModule(module)
+    assert(type(module) == "string", "string only")
+    local path = "https://raw.githubusercontent.com/saucekid/sauceVR/main/modules/"
+    local module = loadstring(game:HttpGetAsync(path.. module.. ".lua"))()
+    return module
+end
+
+local Utils = getModule("Utils")
+
 local function Motor6D(part0, part1, c0, c1, name)
     part1.Transparency = 1;
     part1.Massless = true
@@ -241,8 +250,8 @@ function alignHand(hand, pospart, rotpart, pos, rot)
     al.MaxVelocity = math.huge/9e110;
     al.Responsiveness = resp or 200;
     local ao = Instance.new("AlignOrientation", hand);    
-    ao.RigidityEnabled = false;
-    ao.ReactionTorqueEnabled = true;
+    ao.RigidityEnabled = true;
+    ao.ReactionTorqueEnabled = false;
     ao.PrimaryAxisOnly = false;
     ao.MaxTorque = 10000000;
     ao.MaxAngularVelocity = math.huge/9e110;
@@ -277,14 +286,6 @@ local function holdPart(v, grabAtt, drop)
     end
 end
 
-function getModule(module)
-    assert(type(module) == "string", "string only")
-    local path = "https://raw.githubusercontent.com/saucekid/sauceVR/main/modules/"
-    local module = loadstring(game:HttpGetAsync(path.. module.. ".lua"))()
-    return module
-end
-
-local Utils = getModule("Utils")
 --=========[VR stuff]==========--
 local vrparts, rhand, lhand, header, ToolTrack, HeadTrack, ratt, latt do
     vrparts = Instance.new("Folder", workspace); vrparts.Name = "VRParts"
@@ -338,7 +339,7 @@ if VRReady then
     game:GetService("StarterGui"):SetCore("VREnableControllerModels", false);
 end
 
-hum.PlatformStand = true
+hum.PlatformStand =true
 wait()
 
 --[Replicating]
@@ -434,7 +435,7 @@ for _,part in pairs(Character:GetDescendants()) do
             bv.P = 9000
             bv.Parent = part
             RunService.Heartbeat:connect(function()
-                part.AssemblyLinearVelocity = Vector3.new(45,0,0)
+                part.AssemblyLinearVelocity = Vector3.new(70,0,0)
             end)
             for i,v in pairs(Character:GetChildren()) do
                 if v:IsA("BasePart") then
@@ -482,7 +483,7 @@ end
 
 CurrentCamera.CFrame = CFrame.new((root.Position - VRService:GetUserCFrame(Enum.UserCFrame.Head).Position * options.HeadScale))
 
-wait()
+wait(.1)
 
 align(torso, header, Vector3.new(0,-.8,0))
 if R15 then
@@ -784,7 +785,7 @@ end)
 UserInputService.InputBegan:connect(function(key)
     if key.KeyCode == Enum.KeyCode.ButtonR1 then
         if RgrabPart  then
-            if not RgrabPart.Parent:IsA("Accessory") and not RgrabPart.Parent:FindFirstChildOfClass("Humanoid") and RgrabPart.Parent.Name ~= "Handle" and (RgrabPart:IsGrounded() or RgrabPart.Anchored) then
+            if not RgrabPart.Parent:IsA("Accessory") and not RgrabPart.Parent:FindFirstChildOfClass("Humanoid") and (RgrabPart:IsGrounded() or RgrabPart.Anchored) then
                 RgrabWeld.Part1 = RgrabPart
                 root.Velocity = Vector3.new(0,0,0)
                 fakerightarm.Velocity = Vector3.new(0,0,0)
@@ -799,7 +800,7 @@ UserInputService.InputBegan:connect(function(key)
         end
     elseif key.KeyCode == Enum.KeyCode.ButtonL1 then
         if LgrabPart then
-            if not LgrabPart.Parent:IsA("Accessory") and not LgrabPart.Parent:FindFirstChildOfClass("Humanoid") and LgrabPart.Parent.Name ~= "Handle" and (LgrabPart:IsGrounded() or LgrabPart.Anchored) then
+            if not LgrabPart.Parent:IsA("Accessory") and not LgrabPart.Parent:FindFirstChildOfClass("Humanoid") and (LgrabPart:IsGrounded() or LgrabPart.Anchored) then
                 LgrabWeld.Part1 = LgrabPart
                 root.Velocity = Vector3.new(0,0,0)
                 fakerightarm.Velocity = Vector3.new(0,0,0)
@@ -925,7 +926,7 @@ ViewHUDFunc = function()
 						local Part, Real = unpack(Correspondents[i])
 						
 						if Part and Real and Part.Parent and Real.Parent then
-							Part.CFrame = Real.CFrame
+							Part.CFrame = Real.CFrame - Vector3.new(0,1,0)
 						elseif Part.Parent and not Real.Parent then
 							Part:Destroy()
 						end
