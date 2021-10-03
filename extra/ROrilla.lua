@@ -188,7 +188,7 @@ local function align(a, b, pos, rot, options)
         al.Responsiveness = options.resp or 200;
         local ao = Instance.new("AlignOrientation", Handle);    
         ao.Attachment0 = att0; ao.Attachment1 = att1;
-        ao.RigidityEnabled = false;
+        ao.RigidityEnabled = true;
         ao.ReactionTorqueEnabled = options.reactiontorque or true;
         ao.PrimaryAxisOnly = false;
         ao.MaxTorque = 10000000;
@@ -297,6 +297,7 @@ if VRReady then
     VRService:RecenterUserHeadCFrame();
     CurrentCamera.CameraType = "Scriptable";
     CurrentCamera.HeadScale = options.HeadScale;
+    CurrentCamera.HeadLocked = true
     game:GetService("StarterGui"):SetCore("VRLaserPointerMode", 0);
     game:GetService("StarterGui"):SetCore("VREnableControllerModels", false);
 end
@@ -373,15 +374,15 @@ local fakerightarm, fakeleftarm, RHA, LHA, RgrabWeld, LgrabWeld, RgrabAtt, Lgrab
     LgrabAtt = Instance.new("Attachment", fakeleftarm)
     
     fakerightarm.Touched:Connect(function(part)
-        if fakerightarm:CanCollideWith(part) and not part:IsDescendantOf(Character) and part.Parent ~= vrparts then
-            HapticService:SetMotor(Enum.UserInputType.Gamepad1, Enum.VibrationMotor.RightHand, (RH.Velocity - part.Velocity).Magnitude / 10)
+        if part.CanCollide == true and not part:IsDescendantOf(Character) and part.Parent ~= vrparts then
+            HapticService:SetMotor(Enum.UserInputType.Gamepad1, Enum.VibrationMotor.RightHand, (fakerightarm.Velocity - part.Velocity).Magnitude / 10)
 		    wait()
 		    HapticService:SetMotor(Enum.UserInputType.Gamepad1, Enum.VibrationMotor.RightHand, 0)
         end
     end)
     fakeleftarm.Touched:Connect(function(part)
-        if fakeleftarm:CanCollideWith(part) and not part:IsDescendantOf(Character) and part.Parent ~= vrparts then
-            HapticService:SetMotor(Enum.UserInputType.Gamepad1, Enum.VibrationMotor.LeftHand, (LH.Velocity - part.Velocity).Magnitude / 10)
+        if part.CanCollide == true and not part:IsDescendantOf(Character) and part.Parent ~= vrparts then
+            HapticService:SetMotor(Enum.UserInputType.Gamepad1, Enum.VibrationMotor.LeftHand, (fakeleftarm.Velocity - part.Velocity).Magnitude / 10)
 		    wait()
 		    HapticService:SetMotor(Enum.UserInputType.Gamepad1, Enum.VibrationMotor.LeftHand, 0)
         end
@@ -460,10 +461,10 @@ if R15 then
     alignHand(Character["RightHand"], RH, fakerightarm, Vector3.new(0,-.2,0), Vector3.new(0,-90,0))
     alignHand(Character["LeftHand"], LH, fakeleftarm, Vector3.new(0,-.2,0), Vector3.new(0,-90,0))
 else
-    align(rightleg,RUA, Vector3.new(0,0,0), Vector3.new(0,0,0), {reactiontorque = false})
-    align(rightarm,RLA, Vector3.new(0,0,0), Vector3.new(0,-90,0), {reactiontorque = false})
-    align(leftleg,LUA, Vector3.new(0,0,0), Vector3.new(0,0,0), {reactiontorque = false})
-    align(leftarm,LLA, Vector3.new(0,0,0), Vector3.new(0,-90,0), {reactiontorque = false})
+    align(rightleg,RUA, Vector3.new(0,0,0), Vector3.new(0,0,0))
+    align(rightarm,RLA, Vector3.new(0,0,0), Vector3.new(0,-90,0))
+    align(leftleg,LUA, Vector3.new(0,0,0), Vector3.new(0,0,0))
+    align(leftarm,LLA, Vector3.new(0,0,0), Vector3.new(0,-90,0))
 end
 if options.Hands then
     align(Character[options.RightHand], RH)
@@ -509,8 +510,8 @@ RunService.RenderStepped:Connect(function()
     workspace.Gravity = 75
     if VRReady then
         local HeadCF = VRService:GetUserCFrame(Enum.UserCFrame.Head);
-	    u1 = CFrame.new(root.Position + Vector3.new(0,1, 0)) * CFrame.Angles(0, math.rad(Twist), 0);
-	    CurrentCamera.CFrame = (u1 * CFrame.new(0, 0, 0) * CFrame.fromEulerAnglesXYZ(CFrame.new(HeadCF.p * options.HeadScale):ToEulerAnglesXYZ())) + Vector3.new(0,Height,0)
+	    u1 = CFrame.new((root.Position - HeadCF.Position * Workspace.CurrentCamera.HeadScale) + Vector3.new(0,1.5,0)) * CFrame.Angles(0, math.rad(Twist), 0);
+	    CurrentCamera.CFrame = (u1 * CFrame.new(0, 0, 0) * CFrame.fromEulerAnglesXYZ(CFrame.new(HeadCF.p * options.HeadScale):ToEulerAnglesXYZ())) --+ Vector3.new(0,Height,0)
 	    
         for _,hat in pairs(Character:GetChildren()) do
             if hat:IsA("Accessory") and hat:FindFirstChild("Handle") then hat.Handle.Transparency = 1 end
@@ -740,12 +741,13 @@ end)
 
 UserInputService.InputBegan:connect(function(key)
     if key.KeyCode == Enum.KeyCode.ButtonR1 then
-        if RgrabPart then
+        if RgrabPart and not RgrabPart.Parent:FindFirstChildOfClass("Humanoid") and RgrabPart.Parent.Name ~= "Handle" then
             if not RgrabPart.Parent:IsA("Accessory") and (RgrabPart:IsGrounded() or RgrabPart.Anchored) then
                 RgrabWeld.Part1 = RgrabPart
                 root.Velocity = Vector3.new(0,0,0)
                 fakerightarm.Velocity = Vector3.new(0,0,0)
                 fakeleftarm.Velocity = Vector3.new(0,0,0)
+                root.Massless = false
                 fakerightarm.Massless =  true
                 fakerightarm.CanCollide = false
             else
@@ -754,12 +756,13 @@ UserInputService.InputBegan:connect(function(key)
             end
         end
     elseif key.KeyCode == Enum.KeyCode.ButtonL1 then
-        if LgrabPart then
+        if LgrabPart and not LgrabPart.Parent:FindFirstChildOfClass("Humanoid") and LgrabPart.Parent.Name ~= "Handle" then
             if not LgrabPart.Parent:IsA("Accessory") and (LgrabPart:IsGrounded() or LgrabPart.Anchored) then
                 LgrabWeld.Part1 = LgrabPart
                 root.Velocity = Vector3.new(0,0,0)
                 fakerightarm.Velocity = Vector3.new(0,0,0)
                 fakeleftarm.Velocity = Vector3.new(0,0,0)
+                root.Massless = true
                 fakeleftarm.Massless =  true
                 fakeleftarm.CanCollide = false
             else
@@ -1107,4 +1110,4 @@ ChatHUDFunc = function()
 end;
 
 task.spawn(ChatHUDFunc)
-task.spawn(ViewHUDFunc)    
+task.spawn(ViewHUDFunc)
