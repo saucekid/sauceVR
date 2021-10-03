@@ -31,12 +31,12 @@ function Utils:NoCollideModel(a, b)
     end
 end
 
-function Utils:NoCollide(a, b)
+function Utils:NoCollide(a, b, parent)
     local noCollide = Instance.new("NoCollisionConstraint")
     noCollide.Part0 = a
     noCollide.Part1 = b
     noCollide.Name = ""
-    noCollide.Parent = NoCollideFolder
+    noCollide.Parent = parent or NoCollideFolder
     return noCollide
 end
 
