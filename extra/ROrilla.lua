@@ -1,11 +1,4 @@
 --[[
-  ▄▀  ████▄ █▄▄▄▄ ▄█ █    █    ██          ▄▄▄▄▀ ██     ▄▀  
-▄▀    █   █ █  ▄▀ ██ █    █    █ █      ▀▀▀ █    █ █  ▄▀    
-█ ▀▄  █   █ █▀▀▌  ██ █    █    █▄▄█         █    █▄▄█ █ ▀▄  
-█   █ ▀████ █  █  ▐█ ███▄ ███▄ █  █        █     █  █ █   █ 
- ███          █    ▐     ▀    ▀   █       ▀         █  ███  
-             ▀                   █                 █        
-                                ▀                 ▀         
 
               ████      ████                
             ████████████████████            
@@ -43,6 +36,9 @@ options.Hands = false          -- If you want hands in R6 (You need hats)
  options.LeftHand = "Racing Helmet USA"
 
 
+if getgenv and not getgenv().options then
+    getgenv().options = options
+end
 
 --=========[Variables]==========--
 local Players = game:GetService("Players");     
@@ -102,6 +98,7 @@ LocalPlayer.OnTeleport:Connect(function(State)
         syn.queue_on_teleport([[
             repeat wait() until game:IsLoaded() and game.Players.LocalPlayer.Character
             Wait(1)
+<<<<<<< HEAD
             options = {}
 
             options.HeadScale = 2          -- Headscale of camera (Does not change actual head size)
@@ -120,6 +117,8 @@ LocalPlayer.OnTeleport:Connect(function(State)
             options.RightHand = "Racing Helmet Flames"
             options.LeftHand = "Racing Helmet USA"
             
+=======
+>>>>>>> c6fa255b065a94738a657d304516a248af702ce6
             loadstring(game:HttpGet("https://raw.githubusercontent.com/saucekid/sauceVR/main/extra/ROrilla.lua"))()
         ]])
     end
@@ -783,13 +782,13 @@ end)
 
 UserInputService.InputBegan:connect(function(key)
     if key.KeyCode == Enum.KeyCode.ButtonR1 then
-        if RgrabPart  then
-            if not RgrabPart.Parent:IsA("Accessory") and not RgrabPart.Parent:FindFirstChildOfClass("Humanoid") and RgrabPart.Parent.Name ~= "Handle" and (RgrabPart:IsGrounded() or RgrabPart.Anchored) then
+        if RgrabPart and not RgrabPart.Parent:FindFirstChildOfClass("Humanoid") and RgrabPart.Parent.Name ~= "Handle" then
+            if not RgrabPart.Parent:IsA("Accessory") and (RgrabPart:IsGrounded() or RgrabPart.Anchored) then
                 RgrabWeld.Part1 = RgrabPart
                 root.Velocity = Vector3.new(0,0,0)
                 fakerightarm.Velocity = Vector3.new(0,0,0)
                 fakeleftarm.Velocity = Vector3.new(0,0,0)
-                root.Massless = true
+                root.Massless = false
                 fakerightarm.Massless =  true
                 fakerightarm.CanCollide = false
             else
@@ -798,13 +797,13 @@ UserInputService.InputBegan:connect(function(key)
             end
         end
     elseif key.KeyCode == Enum.KeyCode.ButtonL1 then
-        if LgrabPart then
-            if not LgrabPart.Parent:IsA("Accessory") and not LgrabPart.Parent:FindFirstChildOfClass("Humanoid") and LgrabPart.Parent.Name ~= "Handle" and (LgrabPart:IsGrounded() or LgrabPart.Anchored) then
+        if LgrabPart and not LgrabPart.Parent:FindFirstChildOfClass("Humanoid") and LgrabPart.Parent.Name ~= "Handle" then
+            if not LgrabPart.Parent:IsA("Accessory") and (LgrabPart:IsGrounded() or LgrabPart.Anchored) then
                 LgrabWeld.Part1 = LgrabPart
                 root.Velocity = Vector3.new(0,0,0)
                 fakerightarm.Velocity = Vector3.new(0,0,0)
                 fakeleftarm.Velocity = Vector3.new(0,0,0)
-                root.Massless = false
+                root.Massless = true
                 fakeleftarm.Massless =  true
                 fakeleftarm.CanCollide = false
             else
@@ -1152,4 +1151,8 @@ ChatHUDFunc = function()
 end;
 
 task.spawn(ChatHUDFunc)
+<<<<<<< HEAD
 task.spawn(ViewHUDFunc)
+=======
+task.spawn(ViewHUDFunc)
+>>>>>>> c6fa255b065a94738a657d304516a248af702ce6
