@@ -36,9 +36,6 @@ options.Hands = false          -- If you want hands in R6 (You need hats)
  options.LeftHand = "Racing Helmet USA"
 
 
-if getgenv and not getgenv().options then
-    getgenv().options = options
-end
 
 --=========[Variables]==========--
 local Players = game:GetService("Players");     
@@ -98,7 +95,6 @@ LocalPlayer.OnTeleport:Connect(function(State)
         syn.queue_on_teleport([[
             repeat wait() until game:IsLoaded() and game.Players.LocalPlayer.Character
             Wait(1)
-<<<<<<< HEAD
             options = {}
 
             options.HeadScale = 2          -- Headscale of camera (Does not change actual head size)
@@ -117,8 +113,6 @@ LocalPlayer.OnTeleport:Connect(function(State)
             options.RightHand = "Racing Helmet Flames"
             options.LeftHand = "Racing Helmet USA"
             
-=======
->>>>>>> c6fa255b065a94738a657d304516a248af702ce6
             loadstring(game:HttpGet("https://raw.githubusercontent.com/saucekid/sauceVR/main/extra/ROrilla.lua"))()
         ]])
     end
@@ -264,11 +258,12 @@ end
 local function holdPart(v, grabAtt, drop)
     if v:IsA("BasePart") and v.Anchored == false then
         for _, x in next, v:GetChildren() do
-            if x:IsA("BodyAngularVelocity") or x:IsA("BodyForce") or x:IsA("BodyGyro") or x:IsA("BodyPosition") or x:IsA("BodyThrust") or x:IsA("BodyVelocity") or x:IsA("RocketPropulsion") or x:IsA("Attachment")  or x:IsA("AlignPosition") then
+            if x:IsA("BodyAngularVelocity") or x:IsA("BodyForce") or x:IsA("BodyGyro") or x:IsA("BodyPosition") or x:IsA("BodyThrust") or x:IsA("BodyVelocity") or x:IsA("RocketPropulsion") or x:IsA("Attachment")  or x:IsA("AlignPosition") or x:IsA("NoCollisionConstraint") then
                 x:Destroy()
             end
         end
         if drop then return end
+        Utils:NoCollide(grabAtt.Parent, v, v)
         grabAtt.WorldPosition = v.Position
         local att0 = Instance.new("Attachment", v)
         local AlignPosition = Instance.new("AlignPosition", v)
@@ -386,8 +381,7 @@ local fakerightarm, fakeleftarm, RHA, LHA, RgrabWeld, LgrabWeld, RgrabAtt, Lgrab
     fakerightarm.Size = Vector3.new(1,1,.5)
     fakerightarm.Transparency = options.FakeHandsTransparency
     
-    local nocol = Instance.new("NoCollisionConstraint", fakeleftarm)
-    nocol.Part1 = fakerightarm; nocol.Part0 = fakeleftarm;
+    local nocol = Utils:NoCollide(fakeleftarm, fakerightarm)
     
     local Rap = Instance.new("AlignPosition", fakerightarm);
     Rap.RigidityEnabled = false; Rap.ReactionForceEnabled = true; Rap.ApplyAtCenterOfMass = false; Rap.MaxForce = 10000000; Rap.MaxVelocity = math.huge/9e110; Rap.Responsiveness = 75;
@@ -486,6 +480,10 @@ for _,part in pairs(Character:GetDescendants()) do
     end
 end
 
+CurrentCamera.CFrame = CFrame.new((root.Position - VRService:GetUserCFrame(Enum.UserCFrame.Head).Position * options.HeadScale))
+
+wait(1)
+
 align(torso, header, Vector3.new(0,-.8,0))
 if R15 then
     align(Character["RightUpperLeg"],RUA, Vector3.new(0,.5,0), Vector3.new(0,0,0))
@@ -508,6 +506,9 @@ if options.Hands then
     align(Character[options.RightHand], RH)
     align(Character[options.LeftHand], LH)
 end
+
+fakeleftarm.CFrame = root.CFrame
+fakerightarm.CFrame = root.CFrame
 
 local bg = Instance.new("BodyGyro", root); bg.MaxTorque = Vector3.new(17000,17000,17000); bg.P = 17000
 
@@ -551,7 +552,7 @@ RunService.RenderStepped:Connect(function()
     end
     if VRReady then
         local HeadCF = VRService:GetUserCFrame(Enum.UserCFrame.Head);
-	    u1 = CFrame.new((root.Position - HeadCF.Position * Workspace.CurrentCamera.HeadScale) + Vector3.new(0,1.5,0)) * CFrame.Angles(0, math.rad(Twist), 0);
+	    u1 = CFrame.new((root.Position - HeadCF.Position * options.HeadScale) + Vector3.new(0,1.5,0)) * CFrame.Angles(0, math.rad(Twist), 0);
 	    CurrentCamera.CFrame = (u1 * CFrame.new(0, 0, 0) * CFrame.fromEulerAnglesXYZ(CFrame.new(HeadCF.p * options.HeadScale):ToEulerAnglesXYZ())) --+ Vector3.new(0,Height,0)
 	    
         for _,hat in pairs(Character:GetChildren()) do
@@ -782,13 +783,13 @@ end)
 
 UserInputService.InputBegan:connect(function(key)
     if key.KeyCode == Enum.KeyCode.ButtonR1 then
-        if RgrabPart and not RgrabPart.Parent:FindFirstChildOfClass("Humanoid") and RgrabPart.Parent.Name ~= "Handle" then
-            if not RgrabPart.Parent:IsA("Accessory") and (RgrabPart:IsGrounded() or RgrabPart.Anchored) then
+        if RgrabPart  then
+            if not RgrabPart.Parent:IsA("Accessory") and not RgrabPart.Parent:FindFirstChildOfClass("Humanoid") and RgrabPart.Parent.Name ~= "Handle" and (RgrabPart:IsGrounded() or RgrabPart.Anchored) then
                 RgrabWeld.Part1 = RgrabPart
                 root.Velocity = Vector3.new(0,0,0)
                 fakerightarm.Velocity = Vector3.new(0,0,0)
                 fakeleftarm.Velocity = Vector3.new(0,0,0)
-                root.Massless = false
+                root.Massless = true
                 fakerightarm.Massless =  true
                 fakerightarm.CanCollide = false
             else
@@ -797,13 +798,13 @@ UserInputService.InputBegan:connect(function(key)
             end
         end
     elseif key.KeyCode == Enum.KeyCode.ButtonL1 then
-        if LgrabPart and not LgrabPart.Parent:FindFirstChildOfClass("Humanoid") and LgrabPart.Parent.Name ~= "Handle" then
-            if not LgrabPart.Parent:IsA("Accessory") and (LgrabPart:IsGrounded() or LgrabPart.Anchored) then
+        if LgrabPart then
+            if not LgrabPart.Parent:IsA("Accessory") and not LgrabPart.Parent:FindFirstChildOfClass("Humanoid") and LgrabPart.Parent.Name ~= "Handle" and (LgrabPart:IsGrounded() or LgrabPart.Anchored) then
                 LgrabWeld.Part1 = LgrabPart
                 root.Velocity = Vector3.new(0,0,0)
                 fakerightarm.Velocity = Vector3.new(0,0,0)
                 fakeleftarm.Velocity = Vector3.new(0,0,0)
-                root.Massless = true
+                root.Massless = false
                 fakeleftarm.Massless =  true
                 fakeleftarm.CanCollide = false
             else
@@ -1151,8 +1152,4 @@ ChatHUDFunc = function()
 end;
 
 task.spawn(ChatHUDFunc)
-<<<<<<< HEAD
 task.spawn(ViewHUDFunc)
-=======
-task.spawn(ViewHUDFunc)
->>>>>>> c6fa255b065a94738a657d304516a248af702ce6
