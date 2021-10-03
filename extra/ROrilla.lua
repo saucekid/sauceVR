@@ -482,7 +482,7 @@ end
 
 CurrentCamera.CFrame = CFrame.new((root.Position - VRService:GetUserCFrame(Enum.UserCFrame.Head).Position * options.HeadScale))
 
-wait(1)
+wait()
 
 align(torso, header, Vector3.new(0,-.8,0))
 if R15 then
