@@ -37,6 +37,7 @@ function Utils:NoCollide(a, b)
     noCollide.Part1 = b
     noCollide.Name = ""
     noCollide.Parent = NoCollideFolder
+    return noCollide
 end
 
 function Utils:ClearNoCollide()

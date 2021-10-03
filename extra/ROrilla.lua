@@ -42,6 +42,8 @@ options.Hands = false          -- If you want hands in R6 (You need hats)
  options.RightHand = "Racing Helmet Flames"
  options.LeftHand = "Racing Helmet USA"
 
+
+
 --=========[Variables]==========--
 local Players = game:GetService("Players");     
 local Lighting = game:GetService("Lighting");
@@ -67,6 +69,8 @@ local startCF = root.CFrame
 local VRReady = UserInputService.VREnabled;
 local R15 = hum.RigType == Enum.HumanoidRigType.R15 and true or false
 
+local oldCF = Character.HumanoidRootPart.CFrame
+
 for i,v in pairs(Character:GetChildren()) do
     for _, connection in pairs(getconnections(v.ChildAdded)) do
         connection:Disable()
@@ -91,6 +95,35 @@ end)
 --[Net]
 settings().Physics.AllowSleep = false 
 settings().Physics.PhysicsEnvironmentalThrottle = Enum.EnviromentalPhysicsThrottle.Disabled
+
+--[Execute when rejoin]
+LocalPlayer.OnTeleport:Connect(function(State)
+    if State == Enum.TeleportState.InProgress and syn then
+        syn.queue_on_teleport([[
+            repeat wait() until game:IsLoaded() and game.Players.LocalPlayer.Character
+            Wait(1)
+            options = {}
+
+            options.HeadScale = 2          -- Headscale of camera (Does not change actual head size)
+            options.FakeHandsTransparency = 1  -- Transparency of Arm Hitboxes
+            options.Bubblechat = true      -- Force Bubblechat
+
+            options.PointerRange = 10      -- Range you can click buttons with your arm
+    
+            options.TurnDelay = 0.05       -- Delay in sec. for how fast you can turn left and right
+            options.TurnAngle = 15         -- Change in angle left/right (degrees)
+
+            options.ChatEnabled = true     -- See chat on your left hand in-game
+            options.ChatLocalRange = 70   -- Local chat range
+ 
+            options.Hands = false          -- If you want hands in R6 (You need hats)
+            options.RightHand = "Racing Helmet Flames"
+            options.LeftHand = "Racing Helmet USA"
+            
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/saucekid/sauceVR/main/extra/ROrilla.lua"))()
+        ]])
+    end
+end)
 
 --=========[Functions]==========--
 local function Motor6D(part0, part1, c0, c1, name)
@@ -188,7 +221,7 @@ local function align(a, b, pos, rot, options)
         al.Responsiveness = options.resp or 200;
         local ao = Instance.new("AlignOrientation", Handle);    
         ao.Attachment0 = att0; ao.Attachment1 = att1;
-        ao.RigidityEnabled = false;
+        ao.RigidityEnabled = true;
         ao.ReactionTorqueEnabled = options.reactiontorque or true;
         ao.PrimaryAxisOnly = false;
         ao.MaxTorque = 10000000;
@@ -244,11 +277,20 @@ local function holdPart(v, grabAtt, drop)
         AlignPosition.MaxForce = 9999999999999999
         AlignPosition.MaxVelocity = math.huge
         AlignPosition.Responsiveness = 200
+        AlignPosition.RigidityEnabled = true
         AlignPosition.Attachment0 = att0 
         AlignPosition.Attachment1 = grabAtt
     end
 end
 
+function getModule(module)
+    assert(type(module) == "string", "string only")
+    local path = "https://raw.githubusercontent.com/saucekid/sauceVR/main/modules/"
+    local module = loadstring(game:HttpGetAsync(path.. module.. ".lua"))()
+    return module
+end
+
+local Utils = getModule("Utils")
 --=========[VR stuff]==========--
 local vrparts, rhand, lhand, header, ToolTrack, HeadTrack, ratt, latt do
     vrparts = Instance.new("Folder", workspace); vrparts.Name = "VRParts"
@@ -297,6 +339,7 @@ if VRReady then
     VRService:RecenterUserHeadCFrame();
     CurrentCamera.CameraType = "Scriptable";
     CurrentCamera.HeadScale = options.HeadScale;
+    CurrentCamera.HeadLocked = true
     game:GetService("StarterGui"):SetCore("VRLaserPointerMode", 0);
     game:GetService("StarterGui"):SetCore("VREnableControllerModels", false);
 end
@@ -373,24 +416,22 @@ local fakerightarm, fakeleftarm, RHA, LHA, RgrabWeld, LgrabWeld, RgrabAtt, Lgrab
     LgrabAtt = Instance.new("Attachment", fakeleftarm)
     
     fakerightarm.Touched:Connect(function(part)
-        if fakerightarm:CanCollideWith(part) and not part:IsDescendantOf(Character) and part.Parent ~= vrparts then
-            HapticService:SetMotor(Enum.UserInputType.Gamepad1, Enum.VibrationMotor.RightHand, (RH.Velocity - part.Velocity).Magnitude / 10)
+        if part.CanCollide == true and not part:IsDescendantOf(Character) and part.Parent ~= vrparts then
+            HapticService:SetMotor(Enum.UserInputType.Gamepad1, Enum.VibrationMotor.RightHand, (fakerightarm.Velocity - part.Velocity).Magnitude / 10)
 		    wait()
 		    HapticService:SetMotor(Enum.UserInputType.Gamepad1, Enum.VibrationMotor.RightHand, 0)
         end
     end)
     fakeleftarm.Touched:Connect(function(part)
-        if fakeleftarm:CanCollideWith(part) and not part:IsDescendantOf(Character) and part.Parent ~= vrparts then
-            HapticService:SetMotor(Enum.UserInputType.Gamepad1, Enum.VibrationMotor.LeftHand, (LH.Velocity - part.Velocity).Magnitude / 10)
+        if part.CanCollide == true and not part:IsDescendantOf(Character) and part.Parent ~= vrparts then
+            HapticService:SetMotor(Enum.UserInputType.Gamepad1, Enum.VibrationMotor.LeftHand, (fakeleftarm.Velocity - part.Velocity).Magnitude / 10)
 		    wait()
 		    HapticService:SetMotor(Enum.UserInputType.Gamepad1, Enum.VibrationMotor.LeftHand, 0)
         end
     end)
 end
 
-local NoCollideCache = Instance.new("Folder")
-NoCollideCache.Name = "NoCollideCache"
-NoCollideCache.Parent = workspace.Terrain
+
 for _,part in pairs(Character:GetDescendants()) do
     if part:IsA("BasePart") then
         if part ~= root and part ~= fakeleftarm and part ~= fakerightarm then
@@ -399,18 +440,16 @@ for _,part in pairs(Character:GetDescendants()) do
             bv.MaxForce = Vector3.new(math.huge,math.huge,math.huge)
             bv.P = 9000
             bv.Parent = part
+            RunService.Heartbeat:connect(function()
+                part.AssemblyLinearVelocity = Vector3.new(45,0,0)
+            end)
             for i,v in pairs(Character:GetChildren()) do
                 if v:IsA("BasePart") then
-                    local nocol = Instance.new("NoCollisionConstraint")
-                    nocol.Part1 = part; nocol.Part0 = v;
-                    nocol.Parent = NoCollideCache
+                    Utils:NoCollide(part, v)
                 end
             end
             if part.Name:find("Arm") or part.Name:find("Leg") or part.Name:find("tHand") or part.Name:find("Foot") then
                 part.Transparency = 0
-                RunService.Heartbeat:connect(function()
-                    part.AssemblyLinearVelocity = Vector3.new(70,0,0)
-                end)
                 RunService.Stepped:connect(function()
                     part.CanCollide = false
                 end)
@@ -423,6 +462,7 @@ for _,part in pairs(Character:GetDescendants()) do
                     part.Transparency = 1
                 end
             elseif part.Parent:IsA("Tool") then
+                part.Parent.Parent = LocalPlayer.Backpack
             else
                 part.Transparency = 0.6
             end
@@ -460,10 +500,10 @@ if R15 then
     alignHand(Character["RightHand"], RH, fakerightarm, Vector3.new(0,-.2,0), Vector3.new(0,-90,0))
     alignHand(Character["LeftHand"], LH, fakeleftarm, Vector3.new(0,-.2,0), Vector3.new(0,-90,0))
 else
-    align(rightleg,RUA, Vector3.new(0,0,0), Vector3.new(0,0,0), {reactiontorque = false})
-    align(rightarm,RLA, Vector3.new(0,0,0), Vector3.new(0,-90,0), {reactiontorque = false})
-    align(leftleg,LUA, Vector3.new(0,0,0), Vector3.new(0,0,0), {reactiontorque = false})
-    align(leftarm,LLA, Vector3.new(0,0,0), Vector3.new(0,-90,0), {reactiontorque = false})
+    align(rightleg,RUA, Vector3.new(0,0,0), Vector3.new(0,0,0))
+    align(rightarm,RLA, Vector3.new(0,0,0), Vector3.new(0,-90,0))
+    align(leftleg,LUA, Vector3.new(0,0,0), Vector3.new(0,0,0))
+    align(leftarm,LLA, Vector3.new(0,0,0), Vector3.new(0,-90,0))
 end
 if options.Hands then
     align(Character[options.RightHand], RH)
@@ -507,10 +547,13 @@ RunService.RenderStepped:Connect(function()
     LHA.WorldCFrame = lhand.CFrame
     hum.PlatformStand = true
     workspace.Gravity = 75
+    if root.Position.Y <= -100 then
+        root.CFrame = oldCF
+    end
     if VRReady then
         local HeadCF = VRService:GetUserCFrame(Enum.UserCFrame.Head);
-	    u1 = CFrame.new(root.Position + Vector3.new(0,1, 0)) * CFrame.Angles(0, math.rad(Twist), 0);
-	    CurrentCamera.CFrame = (u1 * CFrame.new(0, 0, 0) * CFrame.fromEulerAnglesXYZ(CFrame.new(HeadCF.p * options.HeadScale):ToEulerAnglesXYZ())) + Vector3.new(0,Height,0)
+	    u1 = CFrame.new((root.Position - HeadCF.Position * Workspace.CurrentCamera.HeadScale) + Vector3.new(0,1.5,0)) * CFrame.Angles(0, math.rad(Twist), 0);
+	    CurrentCamera.CFrame = (u1 * CFrame.new(0, 0, 0) * CFrame.fromEulerAnglesXYZ(CFrame.new(HeadCF.p * options.HeadScale):ToEulerAnglesXYZ())) --+ Vector3.new(0,Height,0)
 	    
         for _,hat in pairs(Character:GetChildren()) do
             if hat:IsA("Accessory") and hat:FindFirstChild("Handle") then hat.Handle.Transparency = 1 end
@@ -740,12 +783,13 @@ end)
 
 UserInputService.InputBegan:connect(function(key)
     if key.KeyCode == Enum.KeyCode.ButtonR1 then
-        if RgrabPart then
-            if not RgrabPart.Parent:IsA("Accessory") and (RgrabPart:IsGrounded() or RgrabPart.Anchored) then
+        if RgrabPart  then
+            if not RgrabPart.Parent:IsA("Accessory") and not RgrabPart.Parent:FindFirstChildOfClass("Humanoid") and RgrabPart.Parent.Name ~= "Handle" and (RgrabPart:IsGrounded() or RgrabPart.Anchored) then
                 RgrabWeld.Part1 = RgrabPart
                 root.Velocity = Vector3.new(0,0,0)
                 fakerightarm.Velocity = Vector3.new(0,0,0)
                 fakeleftarm.Velocity = Vector3.new(0,0,0)
+                root.Massless = true
                 fakerightarm.Massless =  true
                 fakerightarm.CanCollide = false
             else
@@ -755,11 +799,12 @@ UserInputService.InputBegan:connect(function(key)
         end
     elseif key.KeyCode == Enum.KeyCode.ButtonL1 then
         if LgrabPart then
-            if not LgrabPart.Parent:IsA("Accessory") and (LgrabPart:IsGrounded() or LgrabPart.Anchored) then
+            if not LgrabPart.Parent:IsA("Accessory") and not LgrabPart.Parent:FindFirstChildOfClass("Humanoid") and LgrabPart.Parent.Name ~= "Handle" and (LgrabPart:IsGrounded() or LgrabPart.Anchored) then
                 LgrabWeld.Part1 = LgrabPart
                 root.Velocity = Vector3.new(0,0,0)
                 fakerightarm.Velocity = Vector3.new(0,0,0)
                 fakeleftarm.Velocity = Vector3.new(0,0,0)
+                root.Massless = false
                 fakeleftarm.Massless =  true
                 fakeleftarm.CanCollide = false
             else
@@ -1107,4 +1152,4 @@ ChatHUDFunc = function()
 end;
 
 task.spawn(ChatHUDFunc)
-task.spawn(ViewHUDFunc)    
+task.spawn(ViewHUDFunc)
