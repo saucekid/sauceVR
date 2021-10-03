@@ -1,11 +1,4 @@
 --[[
-  ▄▀  ████▄ █▄▄▄▄ ▄█ █    █    ██          ▄▄▄▄▀ ██     ▄▀  
-▄▀    █   █ █  ▄▀ ██ █    █    █ █      ▀▀▀ █    █ █  ▄▀    
-█ ▀▄  █   █ █▀▀▌  ██ █    █    █▄▄█         █    █▄▄█ █ ▀▄  
-█   █ ▀████ █  █  ▐█ ███▄ ███▄ █  █        █     █  █ █   █ 
- ███          █    ▐     ▀    ▀   █       ▀         █  ███  
-             ▀                   █                 █        
-                                ▀                 ▀         
 
               ████      ████                
             ████████████████████            
@@ -41,6 +34,10 @@
 options.Hands = false          -- If you want hands in R6 (You need hats)
  options.RightHand = "Racing Helmet Flames"
  options.LeftHand = "Racing Helmet USA"
+
+if getgenv and not getgenv().options then
+    getgenv().options = options
+end
 
 --=========[Variables]==========--
 local Players = game:GetService("Players");     
@@ -91,6 +88,17 @@ end)
 --[Net]
 settings().Physics.AllowSleep = false 
 settings().Physics.PhysicsEnvironmentalThrottle = Enum.EnviromentalPhysicsThrottle.Disabled
+
+--[Execute when rejoin]
+LocalPlayer.OnTeleport:Connect(function(State)
+    if State == Enum.TeleportState.InProgress and syn then
+        syn.queue_on_teleport([[
+            repeat wait() until game:IsLoaded() and game.Players.LocalPlayer.Character
+            Wait(1)
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/saucekid/sauceVR/main/extra/ROrilla.lua"))()
+        ]])
+    end
+end)
 
 --=========[Functions]==========--
 local function Motor6D(part0, part1, c0, c1, name)
