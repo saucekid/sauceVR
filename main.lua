@@ -1,12 +1,13 @@
-
 repeat wait() until game:IsLoaded() and not _G.Executed
 _G.Executed = true
 
+loadstring(game:HttpGet("https://raw.githubusercontent.com/saucekid/sauceVR/main/modules/Services/PhysicsService.lua"))()
 
 --=========[Variables]
 local Players = game:GetService("Players");     
 local Lighting = game:GetService("Lighting");
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
+local PhysicsService = game:GetService("PhysicsService");
 local ScriptContext = game:GetService("ScriptContext");
 local VRService = game:GetService("VRService");
 local VirtualUser = game:GetService("VirtualUser");
@@ -22,6 +23,9 @@ local LocalPlayer = game.Players.LocalPlayer;
 --[Physics/Network Settings]
 settings().Physics.AllowSleep = false 
 settings().Physics.PhysicsEnvironmentalThrottle = Enum.EnviromentalPhysicsThrottle.Disabled
+
+PhysicsService:CreateCollisionGroup("Character")
+PhysicsService:CollisionGroupSetCollidable("Character", "Character", false)
 
 --[Disable Default VR Controls]
 StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
@@ -61,6 +65,14 @@ local function cframeAlign(a, b, pos)
     Event(RunService.Stepped:Connect(doAlign))
     Event(RunService.Heartbeat:Connect(doAlign))
     Event(RunService.RenderStepped:Connect(doAlign))
+end
+
+function createBeam(hand, part, position)
+    if hand:FindFirstChild("Beam") then
+        hand.Beam.Attachment0:Destroy()
+        hand.Beam.Attachment1:Destroy()
+        hand.Beam:Destroy()
+    end
 end
 
 local function Netless(part)
@@ -122,41 +134,36 @@ function StartVR()
             VRCharacter:SetPrimaryPartCFrame(Humanoid.RootPart.CFrame)
         end
         
-        Humanoid.RootPart.Transparency = .5
-        if RigType == "R6" then
-            cframeAlign(VRCharacter.Humanoid.RootPart, Humanoid.RootPart,  CFrame.new(0,0,-1.1))
-        else
-            cframeAlign(VRCharacter.Humanoid.RootPart, Humanoid.RootPart)
-        end
+        cframeAlign(VRCharacter.Humanoid.RootPart, Humanoid.RootPart)
+        
         local bv = Instance.new("BodyVelocity")
         bv.Velocity = Vector3.new(0,0,0); bv.MaxForce = Vector3.new(math.huge,math.huge,math.huge); bv.P = 9000; bv.Parent = VRCharacter.Humanoid.RootPart
         
-        local bg = Instance.new("BodyGyro");
-        bg.MaxTorque = Vector3.new(17000,17000,17000); bg.P = 17000; bg.Parent = Humanoid.RootPart
+        local bg = Instance.new("BodyGyro", Humanoid.RootPart)
+        bg.MaxTorque = Vector3.new(4000000,4000000,4000000); bg.P = 4000000
         
-        Character.HumanoidRootPart.CustomPhysicalProperties = PhysicalProperties.new(100, 100, 0, 100,100)
+        Character.HumanoidRootPart.CustomPhysicalProperties = PhysicalProperties.new(20, 100, 0, 100,100)
         VRCharacter.Humanoid.AutoRotate = false
         VRCharacter.Humanoid.PlatformStand = true
         Humanoid.RootPart.Anchored = true
-        Humanoid:SetStateEnabled(12,false)
     end
     
 
     --[Hand Collision]
-    local fakerightarm, fakeleftarm, RHA, LHA, RgrabWeld, LgrabWeld, RgrabAtt, LgrabAtt do
+    local VirtualRightArm, VirtualLeftArm, RHA, LHA, RgrabWeld, LgrabWeld, RgrabAtt, LgrabAtt do
         function createArm(name, cframe, size)
             local arm = Instance.new("Part")
             arm.CFrame = cframe
             arm.Name = name 
             arm.Size = size
             arm.Transparency = .4
-            arm.CustomPhysicalProperties = PhysicalProperties.new(50, 1000, -100, 100,100)
+            arm.CustomPhysicalProperties = PhysicalProperties.new(1, 1000, -100, 100,100)
             arm.Parent = Character
             
-            local ap = Instance.new("AlignPosition", arm);
-            ap.RigidityEnabled = false; ap.ReactionForceEnabled = true; ap.ApplyAtCenterOfMass = false; ap.MaxForce = 100000000; ap.MaxVelocity = math.huge/9e110; ap.Responsiveness = 200; ap.Parent = arm
+            local ap = Instance.new("AlignPosition");
+            ap.RigidityEnabled = true; ap.ReactionForceEnabled = true; ap.ApplyAtCenterOfMass = false; ap.MaxForce = 100000000; ap.MaxVelocity = math.huge/9e110; ap.Responsiveness = 200; ap.Parent = arm
             local ao = Instance.new("AlignOrientation");
-            ao.RigidityEnabled = false; ao.ReactionTorqueEnabled = false; ao.PrimaryAxisOnly = false; ao.MaxTorque = 100000000; ao.MaxAngularVelocity = math.huge/9e110; ao.Responsiveness = 200; ao.Parent = arm
+            ao.RigidityEnabled = true; ao.ReactionTorqueEnabled = false; ao.PrimaryAxisOnly = false; ao.MaxTorque = 100000000; ao.MaxAngularVelocity = math.huge/9e110; ao.Responsiveness = 200; ao.Parent = arm
             local att = Instance.new("Attachment", arm)
             
             local rootAtt = Instance.new("Attachment", Character.HumanoidRootPart)
@@ -170,22 +177,20 @@ function StartVR()
             return arm, ap, ao, att, rootAtt, grabWeld, grabAtt
         end
         
-        fakeleftarm, lAO, lAO, lAtt, LHA, lGrabWeld, lGrabAtt = createArm("Fake Left", VRCharacter["LeftHand"].CFrame, VRCharacter["LeftHand"].Size)
-        fakerightarm, rAO, rAO, rAtt, RHA, rGrabWeld, rGrabAtt = createArm("Fake Right", VRCharacter["RightHand"].CFrame, VRCharacter["RightHand"].Size)
+        VirtualLeftArm, lAO, lAO, lAtt, LHA, lGrabWeld, lGrabAtt = createArm("Fake Left", VRCharacter["LeftHand"].CFrame, VRCharacter["LeftHand"].Size)
+        VirtualRightArm, rAO, rAO, rAtt, RHA, rGrabWeld, rGrabAtt = createArm("Fake Right", VRCharacter["RightHand"].CFrame, VRCharacter["RightHand"].Size)
         
-        Utils:NoCollide(fakeleftarm, fakerightarm)
-        
-        Event(fakerightarm.Touched:Connect(function(part)
-            if fakerightarm:CanCollideWith(part) and not part:IsDescendantOf(Character) and not part:IsDescendantOf(VRCharacter) then
-                HapticService:SetMotor(Enum.UserInputType.Gamepad1, Enum.VibrationMotor.RightHand, (fakerightarm.Velocity - part.Velocity).Magnitude / 10)
+        Event(VirtualRightArm.Touched:Connect(function(part)
+            if VirtualRightArm:CanCollideWith(part) and not part:IsDescendantOf(Character) and not part:IsDescendantOf(VRCharacter) then
+                HapticService:SetMotor(Enum.UserInputType.Gamepad1, Enum.VibrationMotor.RightHand, (VirtualRightArm.Velocity - part.Velocity).Magnitude / 10)
     		    wait()
     		    HapticService:SetMotor(Enum.UserInputType.Gamepad1, Enum.VibrationMotor.RightHand, 0)
             end
         end))
         
-        Event(fakeleftarm.Touched:Connect(function(part)
-            if fakeleftarm:CanCollideWith(part) and not part:IsDescendantOf(Character) and not part:IsDescendantOf(VRCharacter) then
-                HapticService:SetMotor(Enum.UserInputType.Gamepad1, Enum.VibrationMotor.LeftHand, (fakeleftarm.Velocity - part.Velocity).Magnitude / 10)
+        Event(VirtualLeftArm.Touched:Connect(function(part)
+            if VirtualLeftArm:CanCollideWith(part) and not part:IsDescendantOf(Character) and not part:IsDescendantOf(VRCharacter) then
+                HapticService:SetMotor(Enum.UserInputType.Gamepad1, Enum.VibrationMotor.LeftHand, (VirtualLeftArm.Velocity - part.Velocity).Magnitude / 10)
     		    wait()
     		    HapticService:SetMotor(Enum.UserInputType.Gamepad1, Enum.VibrationMotor.LeftHand, 0)
             end
@@ -196,9 +201,8 @@ function StartVR()
     local VirtualCharacter do
         VirtualCharacter = getModule("Character/Character").new(VRCharacter)
         VirtualCharacter.Humanoid = Humanoid
-        VirtualCharacter.Parts.HumanoidRootPart = RigType == "R15" and Humanoid.RootPart or VRCharacter.Humanoid.RootPart
+        VirtualCharacter.Parts.HumanoidRootPart = Humanoid.RootPart
 
-        
         ControlService:UpdateCharacterReference(VirtualCharacter)
         ControlService:SetActiveController("SmoothLocomotion")
         CameraService:SetActiveCamera("Default")
@@ -219,23 +223,13 @@ function StartVR()
     
     for _, part in pairs(VRCharacter:GetDescendants()) do
         if part:IsA("BasePart") then
-            Utils:NoCollide(part, fakeleftarm)
-            Utils:NoCollide(part, fakerightarm)
-            Event(RunService.Stepped:Connect(function()
-                part.CanCollide = false
-            end))
+            PhysicsService:SetPartCollisionGroup(part, "Character")
         end
     end
 
     for _, part in pairs(Character:GetDescendants()) do
         if part:IsA("BasePart") then
-            if not part.Name:find("Fake") then
-                Utils:NoCollide(part, fakeleftarm)
-                Utils:NoCollide(part, fakerightarm)
-                Event(RunService.Stepped:Connect(function()
-                    part.CanCollide = false
-                end))
-            end
+            PhysicsService:SetPartCollisionGroup(part, "Character")
             if not DisabledParts[part.Name] and not part.Parent:IsA("Accessory") then 
                 local bv = Instance.new("BodyVelocity")
                 bv.Velocity = Vector3.new(0,0,0)
@@ -253,7 +247,7 @@ function StartVR()
                         end
                     end))
                 else
-                    --part.CustomPhysicalProperties = PhysicalProperties.new(5,10,10)
+                    part.CustomPhysicalProperties = PhysicalProperties.new(5,10,10)
                     Event(RunService.Heartbeat:connect(function()
                         local closestPlayer, distance = Utils:getClosestPlayer()
                         if Humanoid.RootPart.AssemblyLinearVelocity.Magnitude > 3 or closestPlayer and distance < 7 then  
@@ -275,11 +269,11 @@ function StartVR()
         Utils:Align(Character["Right Leg"], VRCharacter["RightLowerLeg"], Vector3.new(0,0,0))
         cframeAlign(Character["Right Leg"], VRCharacter["RightLowerLeg"], CFrame.new(0,0,0))
         
-        Utils:Align(Character["Left Arm"], fakeleftarm, Vector3.new(0,.8,0))
-        cframeAlign(Character["Left Arm"], fakeleftarm, CFrame.new(0,.8,0))
+        Utils:Align(Character["Left Arm"], VRCharacter["LeftLowerArm"], Vector3.new(0,.4,0))
+        cframeAlign(Character["Left Arm"], VRCharacter["LeftLowerArm"], CFrame.new(0,.4,0))
         
-        Utils:Align(Character["Right Arm"], fakerightarm, Vector3.new(0,.8,0))
-        cframeAlign(Character["Right Arm"], fakerightarm, CFrame.new(0,.8,0))
+        Utils:Align(Character["Right Arm"], VRCharacter["RightLowerArm"], Vector3.new(0,.4,0))
+        cframeAlign(Character["Right Arm"], VRCharacter["RightLowerArm"], CFrame.new(0,.4,0))
     end
     
     Humanoid.RootPart.Anchored = false
@@ -298,6 +292,29 @@ function StartVR()
             end
         end
         return tool
+    end
+    
+    local ToolTrackR, ToolTrackL do
+        if RigType == "R6" then
+            ToolTrackR = Instance.new("Part")
+            ToolTrackR.Transparency = 1
+            ToolTrackR.Size = VirtualRightArm.Size
+            ToolTrackR.Anchored = true
+            ToolTrackR.CanCollide = false
+            ToolTrackR.Parent = Character
+        
+            ToolTrackL = Instance.new("Part")
+            ToolTrackL.Transparency = 1
+            ToolTrackL.Size = VirtualLeftArm.Size
+            ToolTrackL.Anchored = true
+            ToolTrackL.CanCollide = false
+            ToolTrackL.Parent = Character
+        
+            Event(RunService.RenderStepped:Connect(function()
+                ToolTrackR.CFrame = VirtualRightArm.CFrame  * CFrame.Angles(math.rad(-90),0,0) * CFrame.new(0,1,0)
+                ToolTrackL.CFrame = VirtualLeftArm.CFrame * CFrame.Angles(math.rad(-90),0,0) * CFrame.new(0,1,0) 
+            end))
+        end
     end
     
     function doTool(tool)
@@ -357,12 +374,12 @@ function StartVR()
             else
                 realhandle.Transparency = 0
                 local rFakeHandle = realhandle:Clone(); rFakeHandle.Parent = tool; rFakeHandle.Name = "RightFakeHandle"; rFakeHandle.Transparency = 1; rFakeHandle.CanCollide = false; rFakeHandle.Massless = true
-                local rFakeGrip = Instance.new("Weld", Character["Right Arm"]); rFakeGrip.C0 = CFrame.new(0, -1, 0, 1, 0, -0, 0, 0, 1, 0, -1, -0); rFakeGrip.C1 = tool.Grip; rFakeGrip.Part1 = rFakeHandle; rFakeGrip.Part0 = Character["Right Arm"]
+                local rFakeGrip = Instance.new("Weld", Character["Right Arm"]); rFakeGrip.C0 = CFrame.new(0, -1, 0, 1, 0, -0, 0, 0, 1, 0, -1, -0); rFakeGrip.C1 = tool.Grip; rFakeGrip.Part1 = rFakeHandle; rFakeGrip.Part0 = ToolTrackR
                 
                 local lFakeHandle = realhandle:Clone(); lFakeHandle.Parent = tool; lFakeHandle.Name = "LeftFakeHandle"; lFakeHandle.Transparency = 1; lFakeHandle.CanCollide = false; lFakeHandle.Massless = true
-                local lFakeGrip = Instance.new("Weld", Character["Left Arm"]); lFakeGrip.C0 = CFrame.new(0, -1, 0, 1, 0, -0, 0, 0, 1, 0, -1, -0); lFakeGrip.C1 = tool.Grip; lFakeGrip.Part1 = lFakeHandle; lFakeGrip.Part0 = Character["Left Arm"]
+                local lFakeGrip = Instance.new("Weld", Character["Left Arm"]); lFakeGrip.C0 = CFrame.new(0, -1, 0, 1, 0, -0, 0, 0, 1, 0, -1, -0); lFakeGrip.C1 = tool.Grip; lFakeGrip.Part1 = lFakeHandle; lFakeGrip.Part0 = ToolTrackL
                 
-                local rToolAtt, toolAP, toolAO = Utils:Align(realhandle, rFakeHandle, Vector3.new(), Vector3.new(), {reactiontorque = true, resp = 70})
+                local rToolAtt, toolAP, toolAO = Utils:Align(realhandle, rFakeHandle, Vector3.new(), Vector3.new(), {reactionforce = true, resp = 70})
                 local lToolAtt = Instance.new("Attachment", lFakeHandle)
                 
                 local function doAlign()
@@ -410,18 +427,42 @@ function StartVR()
     Event(Character.ChildAdded:Connect(doTool))
     Event(LocalPlayer.Backpack.ChildAdded:Connect(doTool))
     
+    --[Climbing & Touching]
+    function getPointPart(hand, distance)
+        local pointRay = Ray.new(hand.Position, -hand.CFrame.upVector.Unit * distance)
+        local part, position, normal = Workspace:FindPartOnRayWithIgnoreList(pointRay, {VRCharacter, Character})
+        return part, position, normal
+    end
     
     --[Controls]
     Event(UserInputService.InputBegan:connect(function(key)
         if key.KeyCode == Enum.KeyCode.ButtonR1 or key.KeyCode == Enum.KeyCode.E then
-            local tool = getClosestTool(fakerightarm)
+            local tool = getClosestTool(VirtualRightArm)
+            local part = getPointPart(VirtualRightArm, 3.5)
             if tool then
                 tool.Hold(true, "Right")
+                HapticService:SetMotor(Enum.UserInputType.Gamepad1, Enum.VibrationMotor.RightHand, 3)
+                wait()
+                HapticService:SetMotor(Enum.UserInputType.Gamepad1, Enum.VibrationMotor.RightHand, 0)
+            elseif part then
+                rGrabWeld.Part1 = part
+                HapticService:SetMotor(Enum.UserInputType.Gamepad1, Enum.VibrationMotor.RightHand, 3)
+                wait()
+                HapticService:SetMotor(Enum.UserInputType.Gamepad1, Enum.VibrationMotor.RightHand, 0)
             end
         elseif key.KeyCode == Enum.KeyCode.ButtonL1 or key.KeyCode == Enum.KeyCode.Q then
-            local tool = getClosestTool(fakeleftarm)
+            local tool = getClosestTool(VirtualLeftArm)
+            local part = getPointPart(VirtualLeftArm, 3.5)
             if tool then
                 tool.Hold(true, "Left")
+                HapticService:SetMotor(Enum.UserInputType.Gamepad1, Enum.VibrationMotor.LeftHand, 3)
+                wait()
+                HapticService:SetMotor(Enum.UserInputType.Gamepad1, Enum.VibrationMotor.LeftHand, 0)
+            elseif part then
+                lGrabWeld.Part1 = part
+                HapticService:SetMotor(Enum.UserInputType.Gamepad1, Enum.VibrationMotor.LeftHand, 3)
+                wait()
+                HapticService:SetMotor(Enum.UserInputType.Gamepad1, Enum.VibrationMotor.LeftHand, 0)
             end
         elseif key.KeyCode == Enum.KeyCode.ButtonL2 or key.UserInputType == Enum.UserInputType.MouseButton1 then
             for _,tool in pairs(tools) do
@@ -442,12 +483,14 @@ function StartVR()
 
     Event(UserInputService.InputEnded:connect(function(key)
         if key.KeyCode == Enum.KeyCode.ButtonR1 or key.KeyCode == Enum.KeyCode.E then
+            rGrabWeld.Part1 = nil
             for _,tool in pairs(tools) do
                 if tool.Hand == "Right" then
                     tool.Hold(false)
                 end
             end
         elseif key.KeyCode == Enum.KeyCode.ButtonL1 or key.KeyCode == Enum.KeyCode.Q then
+            lGrabWeld.Part1 = nil
             for _,tool in pairs(tools) do
                 if tool.Hand == "Left" then
                     tool.Hold(false)
@@ -455,7 +498,18 @@ function StartVR()
             end
         end
     end))
-    
+        
+    local oldpos 
+    Event(Humanoid.RootPart:GetPropertyChangedSignal("Position"):Connect(function(pos)
+        if oldpos and (oldpos - pos).Magnitude > 30 then
+            VirtualLeftArm.CFrame = CFrame.new(pos)
+            VirtualRightArm.CFrame = CFrame.new(pos)
+            rGrabWeld.Part1 = nil
+            lGrabWeld.Part1 = nil
+        end
+        oldpos = pos
+    end))
+
     --[Death]
     function died()
         for i,v in pairs(Character:GetDescendants()) do
@@ -468,6 +522,7 @@ function StartVR()
         Humanoid.Health = 0
         VRCharacter.Humanoid.Health = 0 
         RunService:UnbindFromRenderStep("sauceVRCharacterModelUpdate")
+        CurrentCamera.CameraType = "Custom"
         Event:Clear()
         task.delay(6, function()
             VRCharacter:Destroy()
