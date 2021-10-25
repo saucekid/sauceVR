@@ -204,8 +204,8 @@ function StartVR()
         VirtualCharacter.Parts.HumanoidRootPart = Humanoid.RootPart
 
         ControlService:UpdateCharacterReference(VirtualCharacter)
-        ControlService:SetActiveController("SmoothLocomotion")
-        CameraService:SetActiveCamera("Default")
+        ControlService:SetActiveController(options.DefaultMovementMethod)
+        CameraService:SetActiveCamera(options.DefaultCameraOption)
         
         RunService:BindToRenderStep("sauceVRCharacterModelUpdate",Enum.RenderPriority.Camera.Value - 1,function()
             ControlService:UpdateCharacter()
