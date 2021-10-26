@@ -1,6 +1,6 @@
 # sauceVR
 
-Universal Full-Gody VR
+Universal Full-Body VR
 
 ## Script
 
