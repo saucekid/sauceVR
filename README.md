@@ -1,6 +1,6 @@
 # sauceVR
 
-A Universal VR script for Roblox
+Universal Full-Body VR
 
 ## Script
 
