@@ -1,4 +1,4 @@
---made by LegoHacker1337
+--made by LegoHacker1337 https://raw.githubusercontent.com/LegoHacker1337/legohacks/main/PhysicsServiceOnClient.lua
 --Added a second hook cuz in some reason hookmetamethod doesnt work in Synapse X
 local PhysicsService = game:GetService("PhysicsService")
 local Workspace = game:GetService("Workspace")
