@@ -189,7 +189,7 @@ function MainMenu:SetUpOpening()
             local LeftHandFacingUp,RightHandFacingUp = LeftHandCFrameRelative.UpVector.Y < 0,RightHandCFrameRelative.UpVector.Y < 0
             local LeftHandFacingForward,RightHandFacingForward = LeftHandCFrameRelative.LookVector.Z < 0,RightHandCFrameRelative.LookVector.Z < 0
             local LeftHandUp,RightHandUp = LeftHandFacingUp and LeftHandFacingForward,RightHandFacingUp and RightHandFacingForward
-            local BothHandsUp = MenuToggleGestureActive and LeftHandUp and RightHandUp
+            local BothHandsUp = LeftHandUp and RightHandUp
             if BothHandsUp then
                 BothControllersUpStartTime = BothControllersUpStartTime or tick()
             else
