@@ -82,7 +82,7 @@ function TeleportController:UpdateCharacter()
     --Get the VR inputs.
     local VRInputs = VRInputService:GetVRInputs()
     for _,InputEnum in pairs({Enum.UserCFrame.Head,Enum.UserCFrame.LeftHand,Enum.UserCFrame.RightHand}) do
-        VRInputs[InputEnum] = self:ScaleInput(VRInputs[InputEnum])
+        VRInputs[InputEnum] = self.super:ScaleInput(VRInputs[InputEnum])
     end
 
     --Update the arcs.
