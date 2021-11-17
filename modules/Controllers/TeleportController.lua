@@ -196,7 +196,7 @@ function TeleportController:UpdateCharacter()
     end
 
     --Update the vehicle seat.
-    self:UpdateVehicleSeat()
+    self.super:UpdateVehicleSeat()
 
     --Jump the player.
     if (not UserInputService:GetFocusedTextBox() and UserInputService:IsKeyDown(Enum.KeyCode.Space)) or self.ButtonADown then
