@@ -146,13 +146,21 @@ function library:CreateWindow()
             Selected.TextWrapped = true
             
             Left.MouseButton1Click:Connect(function()
-                pos = math.clamp(pos - 1, 1, #choices)
+                if pos - 1 < 1 then
+                    pos = #choices
+                else
+                    pos -= 1
+                end
                 Selected.Text = choices[pos]
                 funk(choices[pos])
             end)
             
             Right.MouseButton1Click:Connect(function()
-                pos = math.clamp(pos + 1, 1, #choices)
+                if pos + 1 > #choices then
+                    pos = 1
+                else
+                    pos += 1
+                end
                 Selected.Text = choices[pos]
                 funk(choices[pos])
             end)
