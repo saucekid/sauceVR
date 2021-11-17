@@ -6,7 +6,7 @@ local Players = game:GetService("Players")
 local ContextActionService = game:GetService("ContextActionService")
 local UserInputService = game:GetService("UserInputService")
 
-local Event = game.Players.LocalPlayer:FindFirstChild("EyeEvent") or Instance.new("BindableEvent", game.Players.LocalPlayer); Event.Name = "EyeEvent"
+--local Event = game.Players.LocalPlayer:FindFirstChild("EyeEvent") or Instance.new("BindableEvent", game.Players.LocalPlayer); Event.Name = "EyeEvent"
 
 local function GetAngleToGlobalY(CF)
     return math.atan2(-CF.LookVector.X,-CF.LookVector.Z)
@@ -22,7 +22,7 @@ function BaseController:Enable()
         return
     end
 
-    table.insert(self.Connections,Event.Event:Connect(function(type)
+    table.insert(self.Connections,BindableEvent.Event:Connect(function(type)
         if type == "EyeLevel" then
             if self.LastHeadCFrame.Y > 0 then
                 self.LastHeadCFrame = CFrame.new(0,-self.LastHeadCFrame.Y,0) * self.LastHeadCFrame
