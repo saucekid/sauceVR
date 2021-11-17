@@ -118,6 +118,7 @@ function library:CreateWindow()
             Left.Rotation = -90.000
             Left.Size = UDim2.new(0, 50, 0, 50)
             Left.Image = "rbxassetid://5618148630"
+            Left.HoverImage = "rbxassetid://538059577"
 
             local Right = Instance.new("ImageButton")
             Right.Name = "Right"
@@ -128,6 +129,7 @@ function library:CreateWindow()
             Right.Rotation = 90.000
             Right.Size = UDim2.new(0, 50, 0, 50)
             Right.Image = "rbxassetid://5618148630"
+            Right.HoverImage = "rbxassetid://538059577"
 
             local Selected = Instance.new("TextLabel")
             Selected.Name = "Selected"
