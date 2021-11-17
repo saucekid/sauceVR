@@ -16,6 +16,7 @@ local ArcWithBeacon = getModule("Cameras/Visual/ArcWithBeacon")
 local BaseController = getModule("Controllers/BaseController")
 
 local TeleportController = {}
+TeleportController.Connections = {}
 TeleportController.super = BaseController
 
 --[[
