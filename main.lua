@@ -76,6 +76,18 @@ ContextActionService:BindActionAtPriority("DisableInventoryKeys", function()
 	return Enum.ContextActionResult.Sink
 end, false, Enum.ContextActionPriority.High.Value, Enum.KeyCode.ButtonR1, Enum.KeyCode.ButtonL1, Enum.KeyCode.ButtonL2)
 
+--[Bubble Chat]
+Players.PlayerAdded:connect(function(User)
+    User.Chatted:connect(function(Chat)
+        game:GetService("Chat"):Chat(User.Character.Head,Chat,Enum.ChatColor.White)
+    end)
+end)
+for i,v in pairs(Players:GetPlayers()) do
+    v.Chatted:connect(function(Chat)
+        game:GetService("Chat"):Chat(v.Character.Head,Chat,Enum.ChatColor.White)
+    end)
+end
+    
 --[Bypass BodyMover Check]
 local Blacklisted = {
     "BodyForce",
@@ -506,7 +518,7 @@ function StartVR()
             local att0 = Instance.new("Attachment", v)
             local AlignPosition = Instance.new("AlignPosition", v)
             AlignPosition.ReactionForceEnabled = true
-            AlignPosition.MaxForce = 9999999999999999
+            AlignPosition.MaxForce = 100000000
             AlignPosition.MaxVelocity = math.huge   
             AlignPosition.Responsiveness = 200
             AlignPosition.Attachment0 = att0 
@@ -534,7 +546,7 @@ function StartVR()
     Event(UserInputService.InputBegan:connect(function(key)
         if key.KeyCode == Enum.KeyCode.ButtonR1 or key.KeyCode == Enum.KeyCode.E then
             local tool = getClosestTool(VirtualRightArm)
-            local part = getPointPart(VirtualRightArm, 3)
+            local part = getPointPart(VirtualRightArm, 1)
             if tool then
                 tool.Hold(true, "Right")
                 HapticService:SetMotor(Enum.UserInputType.Gamepad1, Enum.VibrationMotor.RightHand, 3)
@@ -554,7 +566,7 @@ function StartVR()
             end
         elseif key.KeyCode == Enum.KeyCode.ButtonL1 or key.KeyCode == Enum.KeyCode.Q then
             local tool = getClosestTool(VirtualLeftArm)
-            local part = getPointPart(VirtualLeftArm, 3)
+            local part = getPointPart(VirtualLeftArm, 1)
             if tool then
                 tool.Hold(true, "Left")
                 HapticService:SetMotor(Enum.UserInputType.Gamepad1, Enum.VibrationMotor.LeftHand, 3)
@@ -625,7 +637,7 @@ function StartVR()
     local UI = getModule('UI/Library')
     local window = UI:CreateWindow()
         local settingsTab = window:CreateTab()
-            local movementMode = settingsTab:AddChoice("Movement Mode", {"None", "SmoothLocomotion"}, options.DefaultMovementMethod, function(mode)
+            local movementMode = settingsTab:AddChoice("Movement Mode", {"None", "SmoothLocomotion", "TeleportController"}, options.DefaultMovementMethod, function(mode)
                 ControlService:SetActiveController(mode)
             end)
             local cameraMode = settingsTab:AddChoice("Camera Mode", {"Default", "ThirdPersonTrack"}, options.DefaultCameraOption, function(mode) 
@@ -676,4 +688,5 @@ function StartVR()
     Event(Humanoid.Died:Connect(died))
 end
 
+LocalPlayer.CharacterAdded:Connect(StartVR)
 StartVR()
