@@ -9,7 +9,14 @@ local POINTER_PARABOLA_HEIGHT_MULTIPLIER = -0.2
 local Workspace = game:GetService("Workspace")
 local Players = game:GetService("Players")
 
-local FindCollidablePartOnRay = NexusVRCharacterModel:GetResource("Util.FindCollidablePartOnRay")
+function getModule(module)
+    assert(type(module) == "string", "string only")
+    local path = "https://raw.githubusercontent.com/saucekid/sauceVR/main/modules/"
+    local module =  loadstring(game:HttpGetAsync(path.. module.. ".lua"))()
+    return module
+end
+
+local Utils = getModule("Utils")
 
 local ArcModule = {}
 
@@ -18,7 +25,7 @@ local ArcModule = {}
 --[[
 Creates an arc.
 --]]
-function ArcModule:new()
+function ArcModule.new()
     local Arc = {}
     Arc.BeamParts = {}
 
@@ -86,7 +93,7 @@ function ArcModule:new()
 
             --Cast the ray to the end.
             --Return if an end was hit and make the arc blue.
-            local HitPart,HitPosition = FindCollidablePartOnRay(SegmentStartPosition,SegmentEndPosition - SegmentStartPosition,Players.LocalPlayer and Players.LocalPlayer.Character,Players.LocalPlayer and Players.LocalPlayer.Character and Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart"))
+            local HitPart,HitPosition = Utils:FindCollidablePartOnRay(SegmentStartPosition,SegmentEndPosition - SegmentStartPosition,Players.LocalPlayer and Players.LocalPlayer.Character,Players.LocalPlayer and Players.LocalPlayer.Character and Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart"))
             self.BeamParts[i].CFrame = CFrame.new(SegmentStartPosition) * CFrame.Angles(0,FaceAngle,0)
             self.BeamParts[i + 1].Beam.Enabled = true
             if HitPart then
