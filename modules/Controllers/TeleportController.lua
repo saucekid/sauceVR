@@ -12,7 +12,7 @@ function getModule(module)
     return module
 end
 
-local ArcWithBeacon = NexusVRCharacterModel:GetInstance("Cameras/Visual/ArcWithBeacon")
+local ArcWithBeacon = getModule("Cameras/Visual/ArcWithBeacon")
 local BaseController = getModule("Controllers/BaseController")
 
 local TeleportController = {}
