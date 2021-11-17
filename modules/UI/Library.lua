@@ -2,9 +2,10 @@ local library = {}
 
 function library:CreateWindow()
     local window = {}
-
+    
     if UIpart then UIpart:Destroy() end
     getgenv().UIpart = Instance.new("Part", workspace.Camera)
+
     UIpart.Anchored = true
     UIpart.Size = Vector3.new(7.972, 8.029, 0.898)
     UIpart.Transparency = 1
@@ -14,6 +15,7 @@ function library:CreateWindow()
     SurfaceGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     SurfaceGui.LightInfluence = 1.000
     SurfaceGui.Parent = UIpart
+    window.SurfaceGui = SurfaceGui
 
     local Tabs = Instance.new("Frame")
     Tabs.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
