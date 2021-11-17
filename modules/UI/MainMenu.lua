@@ -216,6 +216,7 @@ function MainMenu:SetUpOpening()
                 if DeltaTimePercent >= 1 then
                     MenuToggleReached = true
                     coroutine.wrap(function()
+                        BindableEvent:Fire("UI")
                         --self:Toggle()
                     end)()
                 end
