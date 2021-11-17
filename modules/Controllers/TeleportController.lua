@@ -23,6 +23,7 @@ TeleportController.super = BaseController
 Enables the controller.
 --]]
 function TeleportController:Enable()
+    self.super.Character = self.Character
     self.super:Enable()
 
     --Create the arcs.
