@@ -53,13 +53,13 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/saucekid/sauceVR/main
 
 ## Default Controls:
 
-## `Grip Buttons` ▶︎ *Climb Wall/Hold Tool/Hold Unanchored Part*
-## `A` ▶︎ *Jump Button* ***(Customizable)***
-## **To open menu, rotate both your hands towards the floor**
+### `Grip Buttons` ▶︎ *Climb Wall/Hold Tool/Hold Unanchored Part*
+### `A` ▶︎ *Jump Button* ***(Customizable)***
+### **To open menu, rotate both your hands towards the floor**
 
 # Extra
 
-## ROrilla VR:
+### **ROrilla VR**:
 Gorilla Tag in Roblox
 ```lua
 options = {}
