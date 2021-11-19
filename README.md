@@ -37,7 +37,7 @@ getgenv().options = {
     MaxTorsoBend = math.rad(10),
     
     --Inventory Slot Positions (Relative to HumanoidRootPart)
-    InventorySlots = { 
+    InventorySlots = {
         [1] = CFrame.new(-1,-.25,0) * CFrame.Angles(0,math.rad(0),0),
         [2] = CFrame.new(1,-.25,0) * CFrame.Angles(0,math.rad(90),0),
         [3] = CFrame.new(0,0,.5) * CFrame.Angles(0,math.rad(90),0),
@@ -47,7 +47,7 @@ getgenv().options = {
     NetlessVelocity = Vector3.new(0,-45,0)
 }
 
-loadstring(game:HttpGet("https://raw.githubusercontent.com/saucekid/sauceVR/main.lua"))();
+loadstring(game:HttpGet("https://raw.githubusercontent.com/saucekid/sauceVR/main/main.lua"))();
 ```
 
 ## Default Controls:
