@@ -81,3 +81,11 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/saucekid/sauceVR/extr
 ```
 
 <p align="right">(<a href="#top">back to top</a>)</p>
+
+---
+## Credits
+`TheNexusAvenger` - *NexusVR*
+
+## License
+
+Rostruct is available under the MIT license. See [LICENSE](https://github.com/richie0866/Rostruct/blob/main/LICENSE) for more details.
