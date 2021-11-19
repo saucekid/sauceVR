@@ -1,6 +1,13 @@
-# sauceVR
+<div align="center">
+	<a href="https://github.com/saucekid/sauceVR"><img src="assets/images/logo.png" alt="sauceVR logo" width="256"></img></a>
+	<h1></h1>
+	<a href="https://github.com/richie0866/Rostruct/releases/latest"><img src="https://img.shields.io/github/v/release/saucekid/sauceVR?include_prereleases" alt="Latest Release" /></a>
+	<br>
+	Universal R6/R15 Full-Body VR
+</div>
 
-Universal Full-Body VR
+
+---
 
 ## Script
 
@@ -44,10 +51,16 @@ getgenv().options = {
 loadstring(game:HttpGet("https://raw.githubusercontent.com/saucekid/sauceVR/main.lua"))();
 ```
 
+## Default Controls:
 
-## Extra
+## `Grip Buttons` ▶︎ *Climb Wall/Hold Tool/Hold Unanchored Part*
+## `A` ▶︎ *Jump Button* ***(Customizable)***
+## **To open menu, rotate both your hands towards the floor**
 
-**ROrilla:**
+# Extra
+
+## ROrilla VR:
+Gorilla Tag in Roblox
 ```lua
 options = {}
 
@@ -65,3 +78,5 @@ options.ChatEnabled = true     -- See chat on your left hand in-game
 
 loadstring(game:HttpGet("https://raw.githubusercontent.com/saucekid/sauceVR/extra/ROrilla.lua"))();
 ```
+
+<p align="right">(<a href="#top">back to top</a>)</p>
