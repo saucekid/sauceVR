@@ -56,6 +56,7 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/saucekid/sauceVR/main
 ### `Grip Buttons` ▶︎ *Climb Wall/Hold Tool/Hold Unanchored Part*
 ### `A` ▶︎ *Jump Button* ***(Customizable)***
 ### **To open menu, rotate both your hands towards the floor**
+<p align="right">(<a href="#top">back to top</a>)</p>
 
 ---
 
