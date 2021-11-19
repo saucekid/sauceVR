@@ -88,4 +88,4 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/saucekid/sauceVR/extr
 
 ## License
 
-Rostruct is available under the MIT license. See [LICENSE](https://github.com/richie0866/Rostruct/blob/main/LICENSE) for more details.
+sauceVR is available under the MIT license. See [LICENSE](https://github.com/saucekid/sauceVR/blob/main/LICENSE) for more details.
