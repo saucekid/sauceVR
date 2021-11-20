@@ -1,6 +1,3 @@
-repeat wait() until game:IsLoaded() and not _G.Executed
-_G.Executed = true
-
 loadstring(game:HttpGet("https://raw.githubusercontent.com/saucekid/sauceVR/main/modules/Services/PhysicsService.lua"))()
 
 --=========[Variables]
@@ -48,8 +45,12 @@ for i,v in pairs(Players:GetPlayers()) do
         game:GetService("Chat"):Chat(v.Character.Head,Chat,Enum.ChatColor.White)
     end)
 end
-    
+
 --[Bypass BodyMover Check]
+for i, connection in pairs(getconnections(game.ChildAdded)) do
+   connection:Disable()
+end
+
 local Blacklisted = {
     "BodyForce",
     "BodyPosition",
@@ -72,11 +73,16 @@ end))
 
 local OldIndex
 OldIndex = hookmetamethod(game, "__index", function(Self, i)
-    if i == "ClassName" and OrgFunc(Self, "BodyMover") then
-        return "Instance"
+    if not checkcaller() and i == "ClassName" then
+        if OrgFunc(Self, "BodyMover") then
+            return "Instance"
+        elseif tostring(i) == 'BodyVelocity' then
+            return 'BodyVelocity'
+        end
     end
     return OldIndex(Self, i)
 end)
+
 
 --=========[Modules]
 function getModule(module)
@@ -90,7 +96,6 @@ local Event = getModule("Event")
 local Utils = getModule("Utils")
 
 --[Services]
-
 getgenv().CameraService = getModule("Services/CameraService");
 getgenv().ControlService = getModule("Services/ControlService");
 getgenv().VRInputService = getModule("Services/VRInputService");
