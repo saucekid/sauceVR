@@ -57,7 +57,9 @@ function library:CreateWindow()
         TabTemplate.Image = "rbxassetid://6306230437"
         TabTemplate.Parent = Tabs
 
-        function tab:AddButton(text, funk)
+        function tab:AddButton(text, funk, color)
+            local but = {}
+
             local Button = Instance.new("Frame")
             Button.Name = "Button"
             Button.Parent = PageTemplate
@@ -68,7 +70,7 @@ function library:CreateWindow()
             local Button_2 = Instance.new("TextButton")
             Button_2.Name = "Button"
             Button_2.Parent = Button
-            Button_2.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            Button_2.BackgroundColor3 = color or Color3.fromRGB(255, 255, 255)
             Button_2.Position = UDim2.new(0, 50, 0.200000003, 0)
             Button_2.Size = UDim2.new(0, 300, 0, 50)
             Button_2.Font = Enum.Font.Code
@@ -80,8 +82,13 @@ function library:CreateWindow()
 
             local UICorner = Instance.new("UICorner")
             UICorner.Parent = Button_2
-
+            
             Button_2.MouseButton1Click:Connect(funk)
+
+            function but:Destroy()
+                Button:Destroy()
+            end
+            return but
         end
 
         function tab:AddChoice(title, choices, default, funk)
