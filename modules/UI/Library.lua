@@ -12,6 +12,7 @@ function library:CreateWindow()
     UIpart.CanCollide = false
     
     local SurfaceGui = Instance.new("SurfaceGui")
+    SurfaceGui.AlwaysOnTop = true
     SurfaceGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     SurfaceGui.LightInfluence = 1.000
     SurfaceGui.Parent = UIpart
