@@ -76,15 +76,17 @@ ContextActionService:BindActionAtPriority("DisableInventoryKeys", function()
 end, false, Enum.ContextActionPriority.High.Value, Enum.KeyCode.ButtonR1, Enum.KeyCode.ButtonL1, Enum.KeyCode.ButtonL2)
 
 --[Bubble Chat]
-Players.PlayerAdded:connect(function(User)
-    User.Chatted:connect(function(Chat)
-        game:GetService("Chat"):Chat(User.Character.Head,Chat,Enum.ChatColor.White)
+if not game.Chat.BubbleChatEnabled then
+    Players.PlayerAdded:connect(function(User)
+        User.Chatted:connect(function(Chat)
+            game:GetService("Chat"):Chat(User.Character.Head,Chat,Enum.ChatColor.White)
+        end)
     end)
-end)
-for i,v in pairs(Players:GetPlayers()) do
-    v.Chatted:connect(function(Chat)
-        game:GetService("Chat"):Chat(v.Character.Head,Chat,Enum.ChatColor.White)
-    end)
+    for i,v in pairs(Players:GetPlayers()) do
+        v.Chatted:connect(function(Chat)
+            game:GetService("Chat"):Chat(v.Character.Head,Chat,Enum.ChatColor.White)
+        end)
+    end
 end
 
 --[Bypass BodyMover Check]
@@ -213,7 +215,7 @@ function StartVR()
         Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
         Humanoid = Utils.WaitForChildOfClass(Character, "Humanoid")
         RigType = Humanoid.RigType.Name
-        
+        Character.Animate:Destroy()
         --[Anticheat Bypass]
         for _, connection in pairs(getconnections(Character.DescendantAdded)) do
             connection:Disable()
@@ -749,54 +751,6 @@ function StartVR()
         oldpos = Humanoid.RootPart.Position
     end))
 
-    --[UI]
-    local UI = getModule('UI/Library')
-    local window = UI:CreateWindow()
-        local settingsTab = window:CreateTab()
-            local movementMode = settingsTab:AddChoice("Movement Mode", {"None", "SmoothLocomotion", "TeleportController"}, options.DefaultMovementMethod, function(mode)
-                ControlService:SetActiveController(mode)
-            end)
-            local cameraMode = settingsTab:AddChoice("Camera Mode", {"Default", "ThirdPersonTrack"}, options.DefaultCameraOption, function(mode) 
-                CameraService:SetActiveCamera(mode)
-            end)
-            local recenterButton = settingsTab:AddButton("Recenter", function() 
-                VRInputService:Recenter()
-            end)
-            local eyeLevelButton = settingsTab:AddButton("Set Eye Level", function() 
-                VRInputService:SetEyeLevel()
-            end)
-            --[[
-            local HeadMovementButton
-            HeadMovementButton = settingsTab:AddButton("Activate Head Movement (PERMA DEATH)", function() 
-                HeadMovementButton:Destroy()
-                Humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead,false)
-                local prt=Instance.new("Model", workspace)
-                LocalPlayer.Character=prt
-                LocalPlayer.Character=Character
-                wait(6)
-                hum.Health = 0
-                wait()
-                Utils:Align(Character["Head"], VRCharacter["Head"], Vector3.new(0,0,0))
-                cframeAlign(Character["Head"], VRCharacter["Head"], CFrame.new(0,0,0))
-            end, Color3.fromRGB(255,0,0))
-            ]]
-    Event(RunService.RenderStepped:Connect(function()
-        UIpart.SurfaceGui.AlwaysOnTop = true
-        local VRInputs =  VRInputService:GetVRInputs()
-        local HeadCFrame = VRInputs[Enum.UserCFrame.Head]
-        local CameraCenterCFrame = (CurrentCamera.CFrame*CFrame.new(HeadCFrame.p*CurrentCamera.HeadScale)) *CFrame.fromEulerAnglesXYZ(HeadCFrame:ToEulerAnglesXYZ())
-        UIpart.CFrame = UIpart.CFrame:Lerp(CameraCenterCFrame * CFrame.new(2,2,-5) * CFrame.Angles(0,math.rad(180),0), .02)
-    end))
-    window.SurfaceGui.Enabled = false
-    
-    local UIEnabled = false
-    Event(BindableEvent.Event:Connect(function(type)
-        if type == "UI" then
-            UIEnabled = not UIEnabled
-            window.SurfaceGui.Enabled = UIEnabled
-        end
-    end))
-    
     --[Death]
     function died()
         if #Players:GetPlayers() <= 1 then
@@ -823,8 +777,67 @@ function StartVR()
             VRCharacter:Destroy()
         end)
     end
+    local deathEvent = Humanoid.Died:Connect(died)
     
-    Event(Humanoid.Died:Connect(died))
+    --[UI]
+    local UI = getModule('UI/Library')
+    local window = UI:CreateWindow()
+        local settingsTab = window:CreateTab()
+            local movementMode = settingsTab:AddChoice("Movement Mode", {"None", "SmoothLocomotion", "TeleportController"}, options.DefaultMovementMethod, function(mode)
+                ControlService:SetActiveController(mode)
+            end)
+            local cameraMode = settingsTab:AddChoice("Camera Mode", {"Default", "ThirdPersonTrack"}, options.DefaultCameraOption, function(mode) 
+                CameraService:SetActiveCamera(mode)
+            end)
+            local recenterButton = settingsTab:AddButton("Recenter", function() 
+                VRInputService:Recenter()
+            end)
+            local eyeLevelButton = settingsTab:AddButton("Set Eye Level", function() 
+                VRInputService:SetEyeLevel()
+            end)
+            local rejoinButton = settingsTab:AddButton("Rejoin", function() 
+                if #Players:GetPlayers() <= 1 then
+                    Players.LocalPlayer:Kick("\nRejoining...")
+                    wait()
+                    game:GetService('TeleportService'):Teleport(game.PlaceId, LocalPlayer)
+	            else
+	    	        game:GetService('TeleportService'):TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer)
+                end
+            end)
+            --[[
+            local HeadMovementButton
+            HeadMovementButton = settingsTab:AddButton("Activate Head Movement (PERMA DEATH)", function() 
+                HeadMovementButton:Destroy()
+                deathEvent:Disconnect()
+                Humanoid.BreakJointsOnDeath = false
+                Humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead,false)
+                local prt=Instance.new("Model", workspace)
+                LocalPlayer.Character=prt
+                LocalPlayer.Character=Character
+                wait(6)
+                hum.Health = 0
+                wait()
+                Utils:Align(Character["Head"], VRCharacter["Head"], Vector3.new(0,0,0))
+                cframeAlign(Character["Head"], VRCharacter["Head"], CFrame.new(0,0,0))
+            end, Color3.fromRGB(255,0,0))
+            ]]
+    Event(RunService.RenderStepped:Connect(function()
+        UIpart.SurfaceGui.AlwaysOnTop = true
+        local VRInputs =  VRInputService:GetVRInputs()
+        local HeadCFrame = VRInputs[Enum.UserCFrame.Head]
+        local CameraCenterCFrame = (CurrentCamera.CFrame*CFrame.new(HeadCFrame.p*CurrentCamera.HeadScale)) *CFrame.fromEulerAnglesXYZ(HeadCFrame:ToEulerAnglesXYZ())
+        UIpart.CFrame = UIpart.CFrame:Lerp(CameraCenterCFrame * CFrame.new(2,0,-5) * CFrame.Angles(0,math.rad(180),0), .02)
+    end))
+    window.SurfaceGui.Enabled = false
+    
+    local UIEnabled = false
+    Event(BindableEvent.Event:Connect(function(type)
+        if type == "UI" then
+            UIEnabled = not UIEnabled
+            window.SurfaceGui.Enabled = UIEnabled
+        end
+    end))
+    
     
 
     function ViewHUD()
@@ -898,7 +911,7 @@ function StartVR()
                     if Part:IsA("BasePart") and Real then
                         Part.Anchored = true
                         Part:BreakJoints()
-                        if not string.find(Part.Name, "Fake") and Part.Name ~= "HumanoidRootPart" and not Part.Parent:IsA("Tool") then
+                        if not string.find(Part.Name, "Fake") and Part.Name ~= "HumanoidRootPart" and not Part.Parent:IsA("Tool") and Part ~= ToolTrackL and Part ~= ToolTrackR then
                             Part.Transparency = 0
                         else 
                             Part.Transparency = 1
@@ -1073,7 +1086,7 @@ function StartVR()
      
             local Distance = GetPlayerDistance(Sender)
      
-            if Distance and Distance <= options.ChatLocalRange then
+            if Distance and Distance <= 70 then
                 NewLocal(Message, Sender, Color, Distance)
             end
         end
@@ -1116,7 +1129,7 @@ function StartVR()
             local RenderStepped = RunService.RenderStepped:Connect(function()
                 --local VRInputs =  VRInputService:GetVRInputs()
                 --local CameraCenter = Workspace.CurrentCamera:GetRenderCFrame() * VRInputs[Enum.UserCFrame.Head]:Inverse()
-                ChatPart.CFrame = VirtualLeftArm.CFrame  * CFrame.Angles(math.rad(-90),math.rad(0), math.rad(0))
+                ChatPart.CFrame = VirtualLeftArm.CFrame  * CFrame.Angles(math.rad(-90),math.rad(0), math.rad(180))
             end)
      
             local CharacterAdded
@@ -1137,4 +1150,5 @@ function StartVR()
     task.spawn(ViewHUD)
     task.spawn(ChatHUD)
 end
+
 task.spawn(StartVR)
