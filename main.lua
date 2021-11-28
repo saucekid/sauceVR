@@ -379,11 +379,11 @@ function StartVR()
         Utils:Align(Character["Right Leg"], VRCharacter["RightLowerLeg"], Vector3.new(0,0,0))
         cframeAlign(Character["Right Leg"], VRCharacter["RightLowerLeg"], CFrame.new(0,0,0))
         
-        Utils:Align(Character["Left Arm"], VRCharacter["LeftLowerArm"], Vector3.new(0,.4,0))
-        cframeAlign(Character["Left Arm"], VRCharacter["LeftLowerArm"], CFrame.new(0,.4,0))
+        Utils:Align(Character["Left Arm"], VirtualLeftArm, Vector3.new(0,.6,0))
+        cframeAlign(Character["Left Arm"], VirtualLeftArm, CFrame.new(0,.6,0))
         
-        Utils:Align(Character["Right Arm"], VRCharacter["RightLowerArm"], Vector3.new(0,.4,0))
-        cframeAlign(Character["Right Arm"], VRCharacter["RightLowerArm"], CFrame.new(0,.4,0))
+        Utils:Align(Character["Right Arm"], VirtualRightArm, Vector3.new(0,.6,0))
+        cframeAlign(Character["Right Arm"], VirtualRightArm, CFrame.new(0,.6,0))
     end
     
     Humanoid.RootPart.Anchored = false
