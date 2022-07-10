@@ -85,9 +85,6 @@ OldNamecall = hookmetamethod(game, "__namecall", function(Self, ...)
     return OldNamecall(Self, unpack(args))
 end)
 
---[Net]
-settings().Physics.AllowSleep = false 
-settings().Physics.PhysicsEnvironmentalThrottle = Enum.EnviromentalPhysicsThrottle.Disabled
 
 --[Execute when rejoin]
 LocalPlayer.OnTeleport:Connect(function(State)
