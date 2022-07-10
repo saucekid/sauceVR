@@ -63,9 +63,6 @@ local VRReady = UserInputService.VREnabled;
 getgenv().BindableEvent = Instance.new("BindableEvent");
 
 --[Physics/Network Settings]
-settings().Physics.AllowSleep = false 
-settings().Physics.PhysicsEnvironmentalThrottle = Enum.EnviromentalPhysicsThrottle.Disabled
-
 PhysicsService:CreateCollisionGroup("Character")
 PhysicsService:CollisionGroupSetCollidable("Character", "Character", false)
 
