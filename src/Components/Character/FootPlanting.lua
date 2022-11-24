@@ -6,14 +6,8 @@ local V3new = Vector3.new
 local rad,atan2,acos = math.rad,math.atan2,math.acos
 local min,max,abs,log = math.min,math.max,math.abs,math.log
 
-function getModule(module)
-    assert(type(module) == "string", "string only")
-    local path = "https://raw.githubusercontent.com/saucekid/sauceVR/main/modules/"
-    local module =  loadstring(game:HttpGetAsync(path.. module.. ".lua"))()
-    return module
-end
-
-local Utils = getModule("Utils")
+local sauceVR = script:FindFirstAncestor("sauceVR")
+local Utils = require(sauceVR.Util.Utils)
 
 function FootPlanter:CreateSolver(CenterPart,ScaleValue)
 	--Heavily modified code from Stravant

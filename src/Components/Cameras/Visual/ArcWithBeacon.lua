@@ -1,13 +1,6 @@
-
-function getModule(module)
-    assert(type(module) == "string", "string only")
-    local path = "https://raw.githubusercontent.com/saucekid/sauceVR/main/modules/"
-    local module =  loadstring(game:HttpGetAsync(path.. module.. ".lua"))()
-    return module
-end
-
-local Arc = getModule("Cameras/Visual/Arc")
-local Beacon = getModule("Cameras/Visual/Beacon")
+local sauceVR = script:FindFirstAncestor("sauceVR")
+local Arc = require(sauceVR.Components.Cameras.Visual.Arc)
+local Beacon = require(sauceVR.Components.Cameras.Visual.Beacon)
 
 local ArcWithBeaconModule = {}
 

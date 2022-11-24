@@ -42,7 +42,7 @@ function BaseController:Enable()
     coroutine.wrap(function()
         local ControlModule = require(Players.LocalPlayer:WaitForChild("PlayerScripts"):WaitForChild("PlayerModule"):WaitForChild("ControlModule"))
         local Character = self.Character
-        while self.Character == Character and Character.Humanoid.Health > 0 do
+        while self.Character == Character do--and Character.Humanoid.Health > 0 do
             if ControlModule.activeController and ControlModule.activeController.enabled then
                 ControlModule:Disable()
                 ContextActionService:BindActivate(Enum.UserInputType.Gamepad1,Enum.KeyCode.ButtonR2)
@@ -108,7 +108,7 @@ function BaseController:UpdateCharacter()
     end
     self.LastHeadCFrame = VRHeadCFrame
 
-    if self.Character.Parts.HumanoidRootPart:IsDescendantOf(Workspace) and self.Character.Humanoid.Health > 0 then
+    if self.Character.Parts.HumanoidRootPart:IsDescendantOf(Workspace) then--and self.Character.Humanoid.Health > 0 then
         local HumanoidRootPartCFrame = self.Character.Parts.HumanoidRootPart.CFrame
         local LowerTorsoCFrame = HumanoidRootPartCFrame * self.Character.Attachments.HumanoidRootPart.RootRigAttachment.CFrame * self.Character.Motors.Root.Transform * self.Character.Attachments.LowerTorso.RootRigAttachment.CFrame:Inverse()
         local UpperTorsoCFrame = LowerTorsoCFrame * self.Character.Attachments.LowerTorso.WaistRigAttachment.CFrame * self.Character.Motors.Waist.Transform * self.Character.Attachments.UpperTorso.WaistRigAttachment.CFrame:Inverse()

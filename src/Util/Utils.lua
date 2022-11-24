@@ -1,4 +1,5 @@
 local Utils = {}
+
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
@@ -97,7 +98,7 @@ end
 
 function Utils:Align(a, b, pos, rot, options)
     if typeof(options) ~= 'table' then
-        options = {resp = 200, reactiontorque = false, reactionforce = false}
+        options = {resp = 200, reactiontorque = false, reactionforce = false, orientationrig = false}
     end
 
     local att0, att1 do
@@ -127,7 +128,7 @@ function Utils:Align(a, b, pos, rot, options)
     al.Parent = Handle
     local ao = Instance.new("AlignOrientation");    
     ao.Attachment0 = att0; ao.Attachment1 = att1;
-    ao.RigidityEnabled = false;
+    ao.RigidityEnabled = options.orientationrig or false;
     ao.ReactionTorqueEnabled = options.reactiontorque or true;
     ao.PrimaryAxisOnly = false;
     ao.MaxTorque = 10000000;
@@ -179,6 +180,29 @@ function Utils:VRCharacter(Character, trans)
     VRCharacter.Parent = workspace.Terrain
 
     return VRCharacter
+end
+
+function Utils:permaDeath(character)
+    LocalPlayer.Character = nil
+    LocalPlayer.Character = character
+    task.wait(Players.RespawnTime + .05)
+
+    character.Humanoid.BreakJointsOnDeath = false
+    character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
+end
+
+local function cframeAlign(a, b, pos)
+    local Motor = Utils:GetMotorForLimb(a); if Motor then Motor:Destroy() end
+    local function doAlign()
+        pcall(function()
+            if b:IsA("Attachment") then
+                a.CFrame = pos and b.WorldCFrame * pos or b.WorldCFrame
+            else
+                a.CFrame = pos and b.CFrame * pos or b.CFrame
+            end
+        end)
+    end
+    Event(RunService.Heartbeat:Connect(doAlign))
 end
 
 return Utils

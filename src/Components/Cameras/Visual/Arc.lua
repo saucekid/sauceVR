@@ -9,14 +9,8 @@ local POINTER_PARABOLA_HEIGHT_MULTIPLIER = -0.2
 local Workspace = game:GetService("Workspace")
 local Players = game:GetService("Players")
 
-function getModule(module)
-    assert(type(module) == "string", "string only")
-    local path = "https://raw.githubusercontent.com/saucekid/sauceVR/main/modules/"
-    local module =  loadstring(game:HttpGetAsync(path.. module.. ".lua"))()
-    return module
-end
-
-local Utils = getModule("Utils")
+local sauceVR = script:FindFirstAncestor("sauceVR")
+local Utils = require(sauceVR.Util.Utils)
 
 local ArcModule = {}
 

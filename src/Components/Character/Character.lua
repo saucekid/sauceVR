@@ -1,17 +1,11 @@
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 
-function getModule(module)
-    assert(type(module) == "string", "string only")
-    local path = "https://raw.githubusercontent.com/saucekid/sauceVR/main/modules/"
-    local module =  loadstring(game:HttpGetAsync(path.. module.. ".lua"))()
-    return module
-end
-
-local Head = getModule("Character/Head")
-local Torso = getModule("Character/Torso")
-local Appendage = getModule("Character/Appendage")
-local FootPlanter = getModule("Character/FootPlanting")
+local sauceVR = script:FindFirstAncestor("sauceVR")
+local Head = require(sauceVR.Components.Character.Head)
+local Torso = require(sauceVR.Components.Character.Torso)
+local Appendage = require(sauceVR.Components.Character.Appendage)
+local FootPlanter = require(sauceVR.Components.Character.FootPlanting)
 
 local char = {}
 
@@ -204,7 +198,7 @@ function char.new(CharacterModel)
     --Set up replication at 30hz.
     if Players.LocalPlayer then
         coroutine.wrap(function()
-            while Character.Humanoid.Health > 0 do
+            while true do--Character.Humanoid.Health > 0 do
                 --Send the new CFrames if the CFrames changed.
                 if Character.LastReplicationCFrames ~= Character.ReplicationCFrames then
                     Character.LastReplicationCFrames = Character.ReplicationCFrames
@@ -264,10 +258,11 @@ function char.new(CharacterModel)
 
     function Character:UpdateFromInputs(HeadControllerCFrame,LeftHandControllerCFrame,RightHandControllerCFrame)
         --Return if the humanoid is dead.
+        --[[
         if self.Humanoid.Health <= 0 then
             return
         end
-
+        ]]
         local SeatPart = self:GetHumanoidSeatPart()
         if SeatPart then
             self:UpdateFromInputsSeated(HeadControllerCFrame,LeftHandControllerCFrame,RightHandControllerCFrame)
@@ -312,10 +307,12 @@ function char.new(CharacterModel)
 
     function Character:UpdateFromInputsSeated(HeadControllerCFrame,LeftHandControllerCFrame,RightHandControllerCFrame)
         --Return if the humanoid is dead.
+        --[[
         if self.Humanoid.Health <= 0 then
             return
         end
-    
+        ]]
+
         --Get the CFrames.
         local HeadCFrame = self.Head:GetHeadCFrame(HeadControllerCFrame)
         local NeckCFrame = self.Head:GetNeckCFrame(HeadControllerCFrame,0)

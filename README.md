@@ -2,17 +2,27 @@
 	<a href="https://github.com/saucekid/sauceVR"><img src="assets/images/logo.png" alt="sauceVR logo" width="256"></img></a>
 	<a href="https://github.com/richie0866/Rostruct/releases/latest"><img src="https://img.shields.io/github/v/release/saucekid/sauceVR?include_prereleases" alt="Latest Release" /></a>
 	<br>
-	Universal R6/R15 Full-Body VR
+	Roblox Universal Full-Body VR
 </div>
 
 
 ---
+## Install
 
-## Script
+### To install sauceVR for your script executor, save the `package.lua` file located in this repository to your `scripts/` folder.
 
+
+
+
+## Options
+
+#### If you want to edit options, put this before the script:
 
 ```lua
 getgenv().options = {
+    --Head Movement(Permanent Death)
+    HeadMovement = true,
+    
     --Bodyslots or Default (Bodyslots is buggy and)
     Inventory = "Bodyslots" ,
     
@@ -22,12 +32,12 @@ getgenv().options = {
     --None, SmoothLocomotion, or teleport (These can be changed in settings)
     DefaultCameraOption = "Default",
     
---==[Advanced Options]
+-- < [Advanced Options]
     --Character Transparency in First Person
     LocalCharacterTransparency = 0.5,
 
     --Maximum angle the neck can turn before the torso turns.
-    MaxNeckRotation = math.rad(35),
+    MaxNeckRotation = math.rad(45),
     MaxNeckSeatedRotation = math.rad(60),
     
     --Maximum angle the neck can tilt before the torso tilts.
@@ -46,8 +56,6 @@ getgenv().options = {
     --Velocity of part (more = more jitter, but more stable)
     NetlessVelocity = Vector3.new(0,-45,0)
 }
-
-loadstring(game:HttpGet("https://raw.githubusercontent.com/saucekid/sauceVR/main/main.lua"))();
 ```
 
 ## Default Controls:
@@ -83,7 +91,9 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/saucekid/sauceVR/extr
 
 ---
 ## Credits
-`TheNexusAvenger` - *NexusVR*
+`TheNexusAvenger` - [NexusVR](https://github.com/TheNexusAvenger/Nexus-VR-Character-Model)
+
+`richie0866` - [Rostruct](https://github.com/richie0866/Rostruct)
 
 ## License
 

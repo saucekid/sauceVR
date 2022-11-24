@@ -1,0 +1,22 @@
+
+[selene]
+base = "lua51"
+name = "extension"
+[getgenv]
+args = []
+[[readfile.args]]
+required = true
+type = "string"
+[[listfiles.args]]
+required = true
+type = "string"
+[[isfolder.args]]
+required = true
+type = "string"
+[[makefolder.args]]
+required = true
+type = "string"
+["..."]
+property = true
+[ROOT]
+property = true

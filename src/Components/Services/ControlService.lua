@@ -1,14 +1,7 @@
-
-function getModule(module)
-    assert(type(module) == "string", "string only")
-    local path = "https://raw.githubusercontent.com/saucekid/sauceVR/main/modules/"
-    local module =  loadstring(game:HttpGetAsync(path.. module.. ".lua"))()
-    return module
-end
-
-local BaseController = getModule("Controllers/BaseController")
-local SmoothLocomotionController = getModule("Controllers/SmoothLocomotion")
-local TeleportController = getModule("Controllers/TeleportController")
+local sauceVR = script:FindFirstAncestor("sauceVR")
+local BaseController = require(sauceVR.Components.Controllers.BaseController)
+local SmoothLocomotionController = require(sauceVR.Components.Controllers.SmoothLocomotion)
+local TeleportController = require(sauceVR.Components.Controllers.TeleportController)
 
 local ControlService = {}
 ControlService.RegisteredControllers = {}

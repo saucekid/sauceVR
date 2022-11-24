@@ -5,15 +5,9 @@ local THUMBSTICK_MANUAL_ROTATION_ANGLE = math.rad(22.5)
 local Workspace = game:GetService("Workspace")
 local UserInputService = game:GetService("UserInputService")
 
-function getModule(module)
-    assert(type(module) == "string", "string only")
-    local path = "https://raw.githubusercontent.com/saucekid/sauceVR/main/modules/"
-    local module =  loadstring(game:HttpGetAsync(path.. module.. ".lua"))()
-    return module
-end
-
-local ArcWithBeacon = getModule("Cameras/Visual/ArcWithBeacon")
-local BaseController = getModule("Controllers/BaseController")
+local sauceVR = script:FindFirstAncestor("sauceVR")
+local ArcWithBeacon = require(sauceVR.Components.Cameras.Visual.ArcWithBeacon)
+local BaseController = require(sauceVR.Components.Controllers.BaseController)
 
 local TeleportController = {}
 TeleportController.Connections = {}

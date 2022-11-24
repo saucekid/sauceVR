@@ -8,14 +8,8 @@ local Players = game:GetService("Players")
 local VRService = game:GetService("VRService")
 local UserInputService = game:GetService("UserInputService")
 
-function getModule(module)
-    assert(type(module) == "string", "string only")
-    local path = "https://raw.githubusercontent.com/saucekid/sauceVR/main/modules/"
-    local module =  loadstring(game:HttpGetAsync(path.. module.. ".lua"))()
-    return module
-end
-
-local BaseController = getModule("Controllers/BaseController")
+local sauceVR = script:FindFirstAncestor("sauceVR")
+local BaseController = require(sauceVR.Components.Controllers.BaseController)
 
 local SmoothLocomotionController = {}
 SmoothLocomotionController.super = BaseController
