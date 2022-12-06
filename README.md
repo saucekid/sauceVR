@@ -16,59 +16,19 @@
 
 ## Options
 
-#### If you want to edit options, put this before the script:
-
-```lua
-getgenv().options = {
-    --Head Movement(Permanent Death)
-    HeadMovement = true,
-    
-    --Bodyslots or Default (Bodyslots is buggy and)
-    Inventory = "Bodyslots" ,
-    
-    --None, SmoothLocomotion, or teleport (These can be changed in settings)
-    DefaultMovementMethod = "None",
-    
-    --None, SmoothLocomotion, or teleport (These can be changed in settings)
-    DefaultCameraOption = "Default",
-    
--- < [Advanced Options]
-    --Character Transparency in First Person
-    LocalCharacterTransparency = 0.5,
-
-    --Maximum angle the neck can turn before the torso turns.
-    MaxNeckRotation = math.rad(45),
-    MaxNeckSeatedRotation = math.rad(60),
-    
-    --Maximum angle the neck can tilt before the torso tilts.
-    MaxNeckTilt = math.rad(60),
-    
-    --Maximum angle the center of the torso can bend.
-    MaxTorsoBend = math.rad(10),
-    
-    --Inventory Slot Positions (Relative to HumanoidRootPart)
-    InventorySlots = {
-        [1] = CFrame.new(-1,-.25,0) * CFrame.Angles(0,math.rad(0),0),
-        [2] = CFrame.new(1,-.25,0) * CFrame.Angles(0,math.rad(90),0),
-        [3] = CFrame.new(0,0,.5) * CFrame.Angles(0,math.rad(90),0),
-    },
-        
-    --Velocity of part (more = more jitter, but more stable)
-    NetlessVelocity = Vector3.new(0,-45,0)
-}
-```
+### Options are configurable in the script's UI
 
 ## Default Controls:
 
-### `Grip Buttons` ▶︎ *Climb Wall/Hold Tool/Hold Unanchored Part*
-### `A` ▶︎ *Jump Button* ***(Customizable)***
+### `Grip Buttons` ▶︎ *Climb wall / Hold tool / Pick up unanchored part*
+### `Right Thumbstick Forward` ▶︎ *Jump* 
 ### **To open menu, rotate both your hands towards the floor**
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ---
 
 ## **ROrilla VR**:
-Gorilla Tag in Roblox
+Gorilla Tag in Roblox *(Outdated)*
 ```lua
 options = {}
 
@@ -94,6 +54,8 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/saucekid/sauceVR/extr
 `TheNexusAvenger` - [NexusVR](https://github.com/TheNexusAvenger/Nexus-VR-Character-Model)
 
 `richie0866` - [Rostruct](https://github.com/richie0866/Rostruct)
+
+`cl1ents` - Arm Solver
 
 ## License
 
