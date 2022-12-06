@@ -1,5 +1,8 @@
 local appendageModule = {}
 
+local ArmPrecisionDepth = 4
+local MinimumArmPrecision = 0.03
+
 function appendageModule.new(UpperLimb,LowerLimb,LimbEnd,StartAttachment,LimbJointAttachment,LimbEndAttachment,LimbHoldAttachment,PreventDisconnection)
     local Appendage = {}
 
@@ -74,7 +77,7 @@ function appendageModule.new(UpperLimb,LowerLimb,LimbEnd,StartAttachment,LimbJoi
     the starting and holding CFrames. The implementation
     works, but could be improved.
     --]]
-    function Appendage:GetAppendageCFrames(StartCFrame,HoldCFrame)
+    function Appendage:GetAppendageCFrames(StartCFrame,HoldCFrame, Arm)
         --Get the attachment CFrames.
         local LimbHoldCFrame = self:GetAttachmentCFrame(self.LimbEnd,self.LimbHoldAttachment)
         local LimbEndCFrame = self:GetAttachmentCFrame(self.LimbEnd,self.LimbEndAttachment)
@@ -82,7 +85,58 @@ function appendageModule.new(UpperLimb,LowerLimb,LimbEnd,StartAttachment,LimbJoi
         local UpperLimbJointCFrame = self:GetAttachmentCFrame(self.UpperLimb,self.LimbJointAttachment)
         local LowerLimbJointCFrame = self:GetAttachmentCFrame(self.LowerLimb,self.LimbJointAttachment)
         local LowerLimbEndCFrame = self:GetAttachmentCFrame(self.LowerLimb,self.LimbEndAttachment)
-    
+        
+         --Define return variables (probably a terrible practice, but its just so my code makes a tiny bit more sense!)
+        local UpperLimbCFrame,LowerLimbCFrame,AppendageEndCFrame
+
+        --Start of the arm solver
+        if Arm then
+            --Calculate the appendage lengths. In my own way....
+            local UpperLimbLength = math.abs(UpperLimbStartCFrame.Position.Y - UpperLimbJointCFrame.Position.Y)
+            local LowerLimbLength = math.abs(LowerLimbJointCFrame.Position.Y - LowerLimbEndCFrame.Position.Y)
+
+            --Calculate the end point of the limb.
+            AppendageEndCFrame = HoldCFrame * LimbHoldCFrame:Inverse()
+
+            --Calculates the desired IK target, and the offset that it needs to take for the wrist on the lower arm to math up with the wrist on the hand.
+            local RealIKTarget, WristOffset = CFrame.new((AppendageEndCFrame * LimbEndCFrame).p), CFrame.new((UpperLimbStartCFrame * UpperLimbJointCFrame:Inverse() * LowerLimbJointCFrame * LowerLimbEndCFrame:Inverse()).Position*Vector3.new(1,0,1))
+
+            --IK target of the arm, for it to, again, match up the wrist position with the real IK target
+            local IKTarget = AppendageEndCFrame * WristOffset * LimbEndCFrame
+
+            --Init...
+            local Precision = math.huge
+            for z=1, ArmPrecisionDepth do -- Precision depth!
+                --Solve the joint.
+                local PlaneCFrame,UpperAngle,CenterAngle = self:SolveJoint(StartCFrame,IKTarget.Position,UpperLimbLength,LowerLimbLength)
+
+                --Calculate the tranforms
+                local ShoulderTransform = PlaneCFrame * CFrame.Angles(UpperAngle, 0, 0)
+                local ElbowTransform = CFrame.Angles(CenterAngle, 0, 0)
+
+                local CurrentUpperLimbCFrame = ShoulderTransform * UpperLimbStartCFrame:Inverse()
+                local CurrentLowerLimbCFrame = CurrentUpperLimbCFrame * UpperLimbJointCFrame * ElbowTransform * LowerLimbJointCFrame:Inverse()
+                local LimbEnd = CurrentLowerLimbCFrame * LowerLimbEndCFrame	
+
+                local CurrentPrecision = (LimbEnd.p-RealIKTarget.p).Magnitude
+
+                --If current precision regresses, then break to avoid making it worst :el_demo:
+                if CurrentPrecision > Precision then
+                    break
+                end
+
+                Precision = CurrentPrecision
+                UpperLimbCFrame, LowerLimbCFrame = CurrentUpperLimbCFrame, CurrentLowerLimbCFrame
+
+                IKTarget = RealIKTarget * CFrame.fromOrientation(LimbEnd:ToOrientation()) * WristOffset
+            end	
+
+            --If the precision doesn't reach the desired theshold, then it'll revert to the old method. Because I cba.
+            if Precision < MinimumArmPrecision then
+                return UpperLimbCFrame,LowerLimbCFrame,AppendageEndCFrame
+            end
+        end
+
         --Calculate the appendage lengths.
         local UpperLimbLength = (UpperLimbStartCFrame.Position - UpperLimbJointCFrame.Position).magnitude
         local LowerLimbLength = (LowerLimbJointCFrame.Position - LowerLimbEndCFrame.Position).magnitude

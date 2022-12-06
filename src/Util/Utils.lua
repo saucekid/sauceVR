@@ -1,6 +1,11 @@
 local Utils = {}
 
+local sauceVR = script:FindFirstAncestor("sauceVR")
+
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Lighting = game:GetService("Lighting")
+
 local LocalPlayer = Players.LocalPlayer
 
 local NoCollideFolder = workspace.Terrain:FindFirstChild("NoCollideCache") or Instance.new("Folder", workspace.Terrain)
@@ -44,6 +49,17 @@ end
 function Utils:ClearNoCollide()
     NoCollideFolder:ClearAllChildren()
 end
+
+
+function Utils:getPointPart(hand, distance, vector, ignorelist, reverse)
+    vector = vector or "upVector";
+    vector = typeof(hand) == "Instance" and -hand.CFrame[vector].Unit or hand[vector].Unit 
+    vector  = reverse and -vector or vector
+    local pointRay = Ray.new(hand.Position, vector * distance)
+    local part, position, normal = Workspace:FindPartOnRayWithIgnoreList(pointRay, ignorelist)
+    return part, position, normal
+end
+
 
 function Utils:FindCollidablePartOnRay(StartPosition,Direction,IgnoreList,CollisionGroup)
     --Convert the collision group.
@@ -191,7 +207,7 @@ function Utils:permaDeath(character)
     character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
 end
 
-local function cframeAlign(a, b, pos)
+function Utils:cframeAlign(a, b, pos)
     local Motor = Utils:GetMotorForLimb(a); if Motor then Motor:Destroy() end
     local function doAlign()
         pcall(function()
@@ -202,7 +218,36 @@ local function cframeAlign(a, b, pos)
             end
         end)
     end
-    Event(RunService.Heartbeat:Connect(doAlign))
+    RunService.Heartbeat:Connect(doAlign)
+    --RunService.RenderStepped:Connect(doAlign)
+end
+
+
+function Utils:loadingScreen(sec)
+    local first = tick()
+    local oldFogEnd, oldFogColor, oldClockTime = Lighting.FogEnd, Lighting.FogColor, Lighting.ClockTime
+
+    local logoPart = sauceVR.Assets.Logo:Clone()
+    logoPart.Parent = workspace.CurrentCamera
+    logoPart.CFrame =  (workspace.CurrentCamera.CFrame * CFrame.Angles(0,math.rad(180),0)) * CFrame.new(0,0,9)
+
+    local loadCon; loadCon = RunService.RenderStepped:Connect(function()
+        if tick() - first >= sec then
+            logoPart:Destroy()
+
+            Lighting.FogEnd = oldFogEnd
+            Lighting.FogColor = oldFogColor
+            Lighting.ClockTime = oldClockTime
+
+            loadCon:Disconnect()
+        else
+            logoPart.CFrame =  logoPart.CFrame:Lerp((workspace.CurrentCamera.CFrame * CFrame.Angles(0,math.rad(180),0)) * CFrame.new(0,0,9),0.1)
+
+            Lighting.FogEnd = 50
+            Lighting.FogColor = Color3.new(0,0,0)
+            Lighting.ClockTime = 0
+        end
+    end)
 end
 
 return Utils

@@ -1,3 +1,5 @@
+local THUMBSTICK_INPUT_START_RADIUS = 0.6
+local THUMBSTICK_INPUT_RELEASE_RADIUS = 0.4
 local THUMBSTICK_DEADZONE_RADIUS = 0.2
 
 local VRService = game:GetService("VRService")
@@ -22,7 +24,7 @@ function BaseController:Enable()
         return
     end
 
-    table.insert(self.Connections,BindableEvent.Event:Connect(function(type)
+    table.insert(self.Connections,sauceVREvent.Event:Connect(function(type)
         if type == "EyeLevel" then
             if self.LastHeadCFrame.Y > 0 then
                 self.LastHeadCFrame = CFrame.new(0,-self.LastHeadCFrame.Y,0) * self.LastHeadCFrame
@@ -67,6 +69,54 @@ function BaseController:ScaleInput(InputCFrame)
         return InputCFrame
     end
     return CFrame.new(InputCFrame.Position * (self.Character.ScaleValues.BodyHeightScale.Value - 1)) * InputCFrame
+end
+
+function BaseController:GetJoystickState(Store)
+    local InputPosition = VRInputService:GetThumbstickPosition(Store.Thumbstick)
+    local InputRadius = ((InputPosition.X ^ 2) + (InputPosition.Y ^ 2)) ^ 0.5
+    local InputAngle = math.atan2(InputPosition.X, InputPosition.Y)
+
+    local DirectionState, RadiusState
+    if InputAngle >= math.rad(-135) and InputAngle <= math.rad(-45) then
+        DirectionState = "Left"
+    elseif InputAngle >= math.rad(-45) and InputAngle <= math.rad(45) then
+        DirectionState = "Forward"
+    elseif InputAngle >= math.rad(45) and InputAngle <= math.rad(135) then
+        DirectionState = "Right"
+    end
+    if InputRadius >= THUMBSTICK_INPUT_START_RADIUS then
+        RadiusState = "Extended"
+    elseif InputRadius <= THUMBSTICK_INPUT_RELEASE_RADIUS then
+        RadiusState = "Released"
+    else
+        RadiusState = "InBetween"
+    end
+
+    --Update the stored state.
+    local StateChange = nil
+    if RadiusState == "Released" then
+        if Store.RadiusState == "Extended" then
+            StateChange = "Released"
+        end
+        Store.RadiusState = "Released"
+        Store.DirectionState = nil
+    elseif RadiusState == "Extended" then
+        if Store.RadiusState == nil or Store.RadiusState == "Released" then
+            if Store.RadiusState ~= "Extended" then
+                StateChange = "Extended"
+            end
+            Store.RadiusState = "Extended"
+            Store.DirectionState = DirectionState
+        elseif Store.DirectionState ~= DirectionState then
+            if Store.RadiusState ~= "Cancelled" then
+                StateChange = "Cancel"
+            end
+            Store.RadiusState = "Cancelled"
+            Store.DirectionState = nil
+        end
+    end
+
+    return DirectionState, RadiusState, StateChange
 end
 
 function BaseController:UpdateCharacter()

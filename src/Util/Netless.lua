@@ -1,3 +1,8 @@
+--[[
+    Netless bypass 
+    edited from MW Reanimate
+--]]
+
 local sauceVR = script:FindFirstAncestor("sauceVR")
 local Utils = require(sauceVR.Util.Utils)
 
@@ -27,6 +32,16 @@ local function getNetlessVelocity(realPartVelocity) --edit this if you have a be
     if realPartVelocity.Magnitude < 0.1 then return v3_net end
     return realPartVelocity * v3_xz + v3_net
 end
+
+local shp = getfenv().sethiddenproperty
+if shp then
+    local con = nil
+    con = heartbeat:Connect(function()
+        if not c then return con:Disconnect() end
+        shp(lp, "SimulationRadius", 1000)
+    end)
+end
+
 
 local fenv = getfenv()
 
