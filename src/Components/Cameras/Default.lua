@@ -3,22 +3,24 @@ local USE_HEAD_LOCKED_WORKAROUND = true
 local Workspace = game:GetService("Workspace")
 local Players = game:GetService("Players")
 local VRService = game:GetService("VRService")
-
+local RunService = game:GetService("RunService")
 
 local DefaultCamera = {}
 
 function DefaultCamera:Enable()
     self.TransparencyEvents = {}
     if Players.LocalPlayer.Character then
-        local Transparency = options.LocalCharacterTransparency or .5
         table.insert(self.TransparencyEvents,Players.LocalPlayer.Character.DescendantAdded:Connect(function(Part)
             if Part:IsA("BasePart") then
                 if Part.Parent:IsA("Accoutrement") then
                     Part.LocalTransparencyModifier = 1
+                    table.insert(self.TransparencyEvents,RunService.RenderStepped:Connect(function()
+                        Part.LocalTransparencyModifier = 1
+                    end))
                 elseif not Part.Parent:IsA("Tool") then
-                    Part.LocalTransparencyModifier = Transparency
-                    table.insert(self.TransparencyEvents,Part:GetPropertyChangedSignal("LocalTransparencyModifier"):Connect(function()
-                        Part.LocalTransparencyModifier = Transparency
+                    Part.LocalTransparencyModifier = options.LocalCharacterTransparency or 0.5
+                    table.insert(self.TransparencyEvents,RunService.RenderStepped:Connect(function()
+                        Part.LocalTransparencyModifier = options.LocalCharacterTransparency or 0.5
                     end))
                 end
             end
@@ -27,10 +29,13 @@ function DefaultCamera:Enable()
             if Part:IsA("BasePart") then
                 if Part.Parent:IsA("Accoutrement") then
                     Part.LocalTransparencyModifier = 1
+                    table.insert(self.TransparencyEvents,RunService.RenderStepped:Connect(function()
+                        Part.LocalTransparencyModifier = 1
+                    end))
                 elseif not Part.Parent:IsA("Tool") then
-                    Part.LocalTransparencyModifier = Transparency
-                    table.insert(self.TransparencyEvents,Part:GetPropertyChangedSignal("LocalTransparencyModifier"):Connect(function()
-                        Part.LocalTransparencyModifier = Transparency
+                    Part.LocalTransparencyModifier = options.LocalCharacterTransparency
+                    table.insert(self.TransparencyEvents,RunService.RenderStepped:Connect(function()
+                        Part.LocalTransparencyModifier = options.LocalCharacterTransparency
                     end))
                 end
             end

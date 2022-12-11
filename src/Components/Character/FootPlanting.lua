@@ -13,19 +13,19 @@ function FootPlanter:CreateSolver(CenterPart,ScaleValue)
 	--Heavily modified code from Stravant
 	local FootPlanterClass = {}
 	
-	local ignoreModel = CenterPart.Parent
+	local ignoreModel = {CenterPart.Parent, workspace.CurrentCamera}
 	
 	local LEG_GAP = 1.2
 	--
 	local STRIDE_FORWARD = 1.7 / 2
 	local STRIDE_BACKWARD = 3.3 / 2
-	local STRIDE_HEIGHT = 0.6
+	local STRIDE_HEIGHT = 1
 	local STRIDE_RESTING = 1
 	--
 	local WALK_SPEED_VR_THRESHOLD = 2
-	local FOOT_MAX_SPEED_FACTOR = 2
+	local FOOT_MAX_SPEED_FACTOR = 0.1
 	--
-	local WALK_CYCLE_POWER = 1
+	local WALK_CYCLE_POWER = 0.5
 	--
 	local FOOT_ANGLE = rad(5)
 	
@@ -132,10 +132,10 @@ function FootPlanter:CreateSolver(CenterPart,ScaleValue)
 	
 	local LastScale = 1
 	local function UpdateScaling()
-		local Multiplier = ScaleValue.Value / LastScale
+		local Multiplier = ScaleValue.Value / LastScale 
 		LastScale = ScaleValue.Value
 
-		LEG_GAP = LEG_GAP * Multiplier
+		LEG_GAP = LEG_GAP * Multiplier * 0.6
 		STRIDE_FORWARD = STRIDE_FORWARD * Multiplier
 		STRIDE_BACKWARD = STRIDE_BACKWARD * Multiplier
 		STRIDE_HEIGHT = STRIDE_HEIGHT * Multiplier

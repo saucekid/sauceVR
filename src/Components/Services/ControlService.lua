@@ -2,6 +2,7 @@ local sauceVR = script:FindFirstAncestor("sauceVR")
 local BaseController = require(sauceVR.Components.Controllers.BaseController)
 local SmoothLocomotionController = require(sauceVR.Components.Controllers.SmoothLocomotion)
 local TeleportController = require(sauceVR.Components.Controllers.TeleportController)
+local GorillaLocomotionController = require(sauceVR.Components.Controllers.GorillaLocomotion)
 
 local ControlService = {}
 ControlService.RegisteredControllers = {}
@@ -12,6 +13,7 @@ end
 
 ControlService:RegisterController("TeleportController", TeleportController)
 ControlService:RegisterController("SmoothLocomotion", SmoothLocomotionController)
+ControlService:RegisterController("Gorilla", GorillaLocomotionController)
 ControlService:RegisterController("None", BaseController)
 
 function ControlService:UpdateCharacterReference(character)

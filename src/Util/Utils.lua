@@ -1,10 +1,15 @@
 local Utils = {}
 
+local sauceVR = script:FindFirstAncestor("sauceVR")
+
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Lighting = game:GetService("Lighting")
+
 local LocalPlayer = Players.LocalPlayer
 
-local NoCollideFolder = workspace.Terrain:FindFirstChild("NoCollideCache") or Instance.new("Folder", workspace.Terrain)
-NoCollideFolder.Name = "NoCollideCache"
+local cacheFolder = workspace.Terrain:FindFirstChild("Cache") or Instance.new("Folder", workspace.Terrain)
+cacheFolder.Name = "Cache"
 
 local PhysicsService = game:GetService("PhysicsService")
 
@@ -25,7 +30,7 @@ function Utils:NoCollideModel(a, b)
                     noCollide.Part0 = part
                     noCollide.Part1 = part2
                     noCollide.Name = ""
-                    noCollide.Parent = NoCollideFolder
+                    noCollide.Parent = cacheFolder
                 end
             end
         end
@@ -37,13 +42,27 @@ function Utils:NoCollide(a, b, parent)
     noCollide.Part0 = a
     noCollide.Part1 = b
     noCollide.Name = ""
-    noCollide.Parent = parent or NoCollideFolder
+    noCollide.Parent = parent or cacheFolder
     return noCollide
 end
 
-function Utils:ClearNoCollide()
-    NoCollideFolder:ClearAllChildren()
+function Utils:ClearCache()
+    cacheFolder:ClearAllChildren()
 end
+
+function Utils:AddCache(instance)
+    instance.Parent = cacheFolder
+end
+
+function Utils:getPointPart(hand, distance, vector, ignorelist, reverse)
+    vector = vector or "upVector";
+    vector = typeof(hand) == "Instance" and -hand.CFrame[vector].Unit or hand[vector].Unit 
+    vector  = reverse and -vector or vector
+    local pointRay = Ray.new(hand.Position, vector * distance)
+    local part, position, normal = Workspace:FindPartOnRayWithIgnoreList(pointRay, ignorelist)
+    return part, position, normal
+end
+
 
 function Utils:FindCollidablePartOnRay(StartPosition,Direction,IgnoreList,CollisionGroup)
     --Convert the collision group.
@@ -53,7 +72,7 @@ function Utils:FindCollidablePartOnRay(StartPosition,Direction,IgnoreList,Collis
 
     --Create the ignore list.
     local Camera = Workspace.CurrentCamera
-    local NewIgnoreList = {Camera, game.Players.LocalPlayer.Character}
+    local NewIgnoreList = {Camera, game.Players.LocalPlayer.Character, workspace.Terrain:FindFirstChild("VRCharacter")}
     if typeof(IgnoreList) == "Instance" then
         table.insert(NewIgnoreList,IgnoreList)
     elseif typeof(IgnoreList) == "table" then
@@ -96,9 +115,17 @@ function Utils:GetMotorForLimb(Limb)
 	end
 end
 
+function Utils:createMotor(part0, part1, c0, c1, name)
+    part1.Transparency = 1;
+    part1.Massless = true
+    local motor = Instance.new("Motor6D"); motor.Name = name; motor.Part0 = part0; motor.Part1 = part1; motor.C0 = c0; motor.C1 = c1; motor.Parent = part1
+    return motor, motor.C0
+end
+
+
 function Utils:Align(a, b, pos, rot, options)
     if typeof(options) ~= 'table' then
-        options = {resp = 200, reactiontorque = false, reactionforce = false, orientationrig = false}
+        options = {resp = 200, reactiontorque = false, reactionforce = false, orientationrig = true}
     end
 
     local att0, att1 do
@@ -128,7 +155,7 @@ function Utils:Align(a, b, pos, rot, options)
     al.Parent = Handle
     local ao = Instance.new("AlignOrientation");    
     ao.Attachment0 = att0; ao.Attachment1 = att1;
-    ao.RigidityEnabled = options.orientationrig or false;
+    ao.RigidityEnabled = options.orientationrig or true;
     ao.ReactionTorqueEnabled = options.reactiontorque or true;
     ao.PrimaryAxisOnly = false;
     ao.MaxTorque = 10000000;
@@ -142,7 +169,7 @@ end
 function Utils:getClosestPlayer()
     local Character = LocalPlayer.Character
     local HumanoidRootPart = Character and Character:FindFirstChild("HumanoidRootPart")
-    if not (Character or HumanoidRootPart) then return end
+    if  (not Character or not HumanoidRootPart) then return end
 
     local TargetDistance = math.huge
     local Target
@@ -191,7 +218,8 @@ function Utils:permaDeath(character)
     character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
 end
 
-local function cframeAlign(a, b, pos)
+function Utils:cframeAlign(a, b, pos, frame)
+    local frame = frame or "Heartbeat"
     local Motor = Utils:GetMotorForLimb(a); if Motor then Motor:Destroy() end
     local function doAlign()
         pcall(function()
@@ -202,7 +230,36 @@ local function cframeAlign(a, b, pos)
             end
         end)
     end
-    Event(RunService.Heartbeat:Connect(doAlign))
+    RunService[frame]:Connect(doAlign)
+    --RunService.RenderStepped:Connect(doAlign)
+end
+
+
+function Utils:loadingScreen(sec)
+    local first = tick()
+    local oldFogEnd, oldFogColor, oldClockTime = Lighting.FogEnd, Lighting.FogColor, Lighting.ClockTime
+
+    local logoPart = sauceVR.Assets.Logo:Clone()
+    logoPart.Parent = workspace.CurrentCamera
+    logoPart.CFrame =  (workspace.CurrentCamera.CFrame * CFrame.Angles(0,math.rad(180),0)) * CFrame.new(0,0,9)
+
+    local loadCon; loadCon = RunService.RenderStepped:Connect(function()
+        if tick() - first >= sec then
+            logoPart:Destroy()
+
+            Lighting.FogEnd = oldFogEnd
+            Lighting.FogColor = oldFogColor
+            Lighting.ClockTime = oldClockTime
+
+            loadCon:Disconnect()
+        else
+            logoPart.CFrame =  logoPart.CFrame:Lerp((workspace.CurrentCamera.CFrame * CFrame.Angles(0,math.rad(180),0)) * CFrame.new(0,0,9),0.1)
+
+            Lighting.FogEnd = 50
+            Lighting.FogColor = Color3.new(0,0,0)
+            Lighting.ClockTime = 0
+        end
+    end)
 end
 
 return Utils

@@ -14,7 +14,8 @@ function char.new(CharacterModel)
     local Character = {}
 
     Character.TweenComponents = true
-
+    Character.Model = CharacterModel
+    
     local PreventArmDisconnection = false
 
     --Store the body parts.
@@ -38,6 +39,23 @@ function char.new(CharacterModel)
         LeftFoot = CharacterModel:WaitForChild("LeftFoot"),
     }
     Character.Motors = {
+        Neck = Character.Parts.Head:WaitForChild("Neck"):Clone(),
+        Waist = Character.Parts.UpperTorso:WaitForChild("Waist"):Clone(),
+        Root = Character.Parts.LowerTorso:WaitForChild("Root"):Clone(),
+        RightShoulder = Character.Parts.RightUpperArm:WaitForChild("RightShoulder"):Clone(),
+        RightElbow = Character.Parts.RightLowerArm:WaitForChild("RightElbow"):Clone(),
+        RightWrist = Character.Parts.RightHand:WaitForChild("RightWrist"):Clone(),
+        LeftShoulder = Character.Parts.LeftUpperArm:WaitForChild("LeftShoulder"):Clone(),
+        LeftElbow = Character.Parts.LeftLowerArm:WaitForChild("LeftElbow"):Clone(),
+        LeftWrist = Character.Parts.LeftHand:WaitForChild("LeftWrist"):Clone(),
+        RightHip = Character.Parts.RightUpperLeg:WaitForChild("RightHip"):Clone(),
+        RightKnee = Character.Parts.RightLowerLeg:WaitForChild("RightKnee"):Clone(),
+        RightAnkle = Character.Parts.RightFoot:WaitForChild("RightAnkle"):Clone(),
+        LeftHip = Character.Parts.LeftUpperLeg:WaitForChild("LeftHip"):Clone(),
+        LeftKnee = Character.Parts.LeftLowerLeg:WaitForChild("LeftKnee"):Clone(),
+        LeftAnkle = Character.Parts.LeftFoot:WaitForChild("LeftAnkle"):Clone(),
+    }
+    Character.RealMotors = {
         Neck = Character.Parts.Head:WaitForChild("Neck"),
         Waist = Character.Parts.UpperTorso:WaitForChild("Waist"),
         Root = Character.Parts.LowerTorso:WaitForChild("Root"),
@@ -170,10 +188,12 @@ function char.new(CharacterModel)
         if Players.LocalPlayer and Players.LocalPlayer.Character == CharacterModel then
             CharacterModel:WaitForChild("Animate"):Destroy()
             for _,Track in pairs(Animator:GetPlayingAnimationTracks()) do
-                Track:Stop()
+                Track:AdjustWeight(0, 0)
+                Track:Stop(0)
             end
             Animator.AnimationPlayed:Connect(function(Track)
-                Track:Stop()
+                Track:AdjustWeight(0, 0)
+                Track:Stop(0)
             end)
         else
             Animator:Destroy()
@@ -184,10 +204,12 @@ function char.new(CharacterModel)
             if Players.LocalPlayer and Players.LocalPlayer.Character == CharacterModel then
                 CharacterModel:WaitForChild("Animate"):Destroy()
                 for _,Track in pairs(NewAnimator:GetPlayingAnimationTracks()) do
-                    Track:Stop()
+                    Track:AdjustWeight(0, 0)
+                    Track:Stop(0)
                 end
                 NewAnimator.AnimationPlayed:Connect(function(Track)
-                    Track:Stop()
+                    Track:AdjustWeight(0, 0)
+                    Track:Stop(0)
                 end)
             else
                 NewAnimator:Destroy()
@@ -300,6 +322,12 @@ function char.new(CharacterModel)
         self:SetTransform("LeftShoulder","LeftShoulderRigAttachment","UpperTorso","LeftUpperArm",UpperTorsoCFrame,LeftUpperArmCFrame)
         self:SetTransform("LeftElbow","LeftElbowRigAttachment","LeftUpperArm","LeftLowerArm",LeftUpperArmCFrame,LeftLowerArmCFrame)
         self:SetTransform("LeftWrist","LeftWristRigAttachment","LeftLowerArm","LeftHand",LeftLowerArmCFrame,LeftHandCFrame)
+        
+        --Change real motor's transforms, too!
+        for Name,Motor in pairs(self.Motors) do
+            self.RealMotors[Name].Transform = Motor.Transform
+        end
+        
         if Players.LocalPlayer and Players.LocalPlayer.Character == self.CharacterModel then
             self.ReplicationCFrames = {HeadControllerCFrame,LeftHandControllerCFrame,RightHandControllerCFrame}
         end
