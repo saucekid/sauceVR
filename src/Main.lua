@@ -123,6 +123,17 @@ function Init()
             for _,anim in pairs(Humanoid:GetPlayingAnimationTracks()) do
                 anim:Stop()
             end
+
+            for i,tool in pairs(LocalPlayer.Backpack:GetChildren()) do
+                if tool:IsA("Tool") then 
+                    task.spawn(function() 
+                        tool.Parent = Character 
+                        task.wait(.1)
+                        tool.Parent = LocalPlayer.Backpack
+                    end) 
+                end
+            end
+
             --Create a client sided character that handles joints
             if RigType == "R15" then
                 VRCharacter = Utils:VRCharacter(Character, 1)
@@ -165,10 +176,15 @@ function Init()
                 task.delay(0.5, function()
                     for _,hat in pairs(Character:GetChildren()) do
                         if hat:IsA("Accessory") then
-                            sethiddenproperty(hat, "BackendAccoutrementState", 0) 
-                            for i,att in pairs(hat.Handle:GetChildren()) do
-                                if att:IsA("Attachment") then att:Destroy() end 
-                            end
+                            task.spawn(function()
+                                for i = 1,3 do
+                                    sethiddenproperty(hat, "BackendAccoutrementState", 3) 
+                                    for i,att in pairs(hat.Handle:GetChildren()) do
+                                        if att:IsA("Attachment") then att:Destroy() end 
+                                    end
+                                    task.wait()
+                                end
+                            end)
                         end
                     end
                 end)
@@ -210,7 +226,7 @@ function Init()
                 local ap = Instance.new("AlignPosition");
                 ap.RigidityEnabled = false; ap.ReactionForceEnabled = true; ap.ApplyAtCenterOfMass = false; ap.MaxForce = 100000000; ap.MaxVelocity = math.huge/9e110; ap.Responsiveness = 200; ap.Parent = arm
                 local ao = Instance.new("AlignOrientation");
-                ao.RigidityEnabled = false; ao.ReactionTorqueEnabled = true; ao.PrimaryAxisOnly = false; ao.MaxTorque = 100000000; ao.MaxAngularVelocity = math.huge/9e110; ao.Responsiveness = 200; ao.Parent = arm
+                ao.RigidityEnabled = false; ao.ReactionTorqueEnabled = false; ao.PrimaryAxisOnly = false; ao.MaxTorque = 100000000; ao.MaxAngularVelocity = math.huge/9e110; ao.Responsiveness = 200; ao.Parent = arm
                 local att = Instance.new("Attachment", arm)
                     
                 local rootAtt = Instance.new("Attachment", Character.HumanoidRootPart)
@@ -328,6 +344,9 @@ function Init()
                 if renderPart then
                     renderPart.LocalTransparencyModifier = part.LocalTransparencyModifier
                     Event(RunService.RenderStepped:Connect(function()
+                        if (part.Position - renderPart.Position).Magnitude > 10 then
+                            renderPart:Destroy()
+                        end
                         renderPart.LocalTransparencyModifier = part.LocalTransparencyModifier
                     end))
 
@@ -354,16 +373,18 @@ function Init()
                                 part.Transparency = 1
                                 Utils:cframeAlign(renderPart, R6Parts[part.Name].Align, CFrame.new(R6Parts[part.Name].Offset), "RenderStepped")
                             end
-
-                            partAlign = Netless:align(part, R6Parts[part.Name].Align, R6Parts[part.Name].Offset, "Heartbeat")
+                            
+                            partAlign = Netless:align(part, R6Parts[part.Name].Align, R6Parts[part.Name].Offset, true)
                         end
                     end
 
                     if partAlign then
                         function partAlign.Reset()
-                            local vrPart = RigType == "R15" and VRCharacter:FindFirstChild(part.Name) or R6Parts[part.Name].Align
-                            partAlign.offset = RigType == "R15" and Vector3.new(0,0,0) or R6Parts[part.Name].Align
-                            partAlign.Part1 = vrPart
+                            if Character and Humanoid and part then
+                                local vrPart = RigType == "R15" and VRCharacter:FindFirstChild(part.Name) or R6Parts[part.Name].Align
+                                partAlign.offset = RigType == "R15" and Vector3.new(0,0,0) or R6Parts[part.Name].Align
+                                partAlign.Part1 = vrPart
+                            end
                         end
 
                         VirtualCharacter.Aligns[part.Name] = partAlign
@@ -413,6 +434,7 @@ function Init()
         
 
         function doTool(tool)
+            task.wait()
             if tool:IsA("Tool") and tool:FindFirstChild("Handle") and not tool:GetAttribute("Done") then
                 tool:SetAttribute("Done", true)
                 tool.ManualActivationOnly = true
@@ -423,8 +445,7 @@ function Init()
 
                 repeat task.wait()
                     realhandle.CFrame = Humanoid.RootPart.CFrame
-                until (realhandle.Position -  Humanoid.RootPart.Position).Magnitude < 10
-
+                until (realhandle.Position -  Humanoid.RootPart.Position).Magnitude < 5
                 tool.Parent = Character
 
                 local toolnum = #tools + 1
@@ -439,21 +460,24 @@ function Init()
                     
                     lFakeHandle = realhandle:Clone(); lFakeHandle.Massless = true; lFakeHandle.Name = "LeftHandle"; lFakeHandle.Parent = tool; lFakeHandle.Transparency = 1
                     rFakeHandle = realhandle:Clone(); rFakeHandle.Massless = true; rFakeHandle.Name = "Handle"; rFakeHandle.Parent = tool; rFakeHandle.Transparency = 1
-                    
-                    local rightGrip = Character.RightHand:WaitForChild("RightGrip");
+                     
+                    local rightGrip = Character.RightHand["RightGrip"]
+                    if Character["RightHand"]:FindFirstChild("RightGrip") then Character["RightHand"].RightGrip:Destroy() end   
                     local rGrip = rightGrip:Clone(); rGrip.Part0 = VRCharacter.RightHand; rGrip.Part1 = rFakeHandle; rGrip.Parent = VRCharacter.RightHand; rGrip.C0 = rightGrip.C0;
                     local lGrip = rightGrip:Clone(); lGrip.Part0 = VRCharacter.LeftHand; lGrip.Name = "LeftGrip"; lGrip.Part1 = lFakeHandle; lGrip.Parent = VRCharacter.LeftHand; lGrip.C0 = rightGrip.C0;
-                    
+
                     rightGrip:Destroy()
                     Character.RightHand:ClearAllChildren()
 
                     toolAlign = Netless:align(realhandle, VRCharacter["UpperTorso"], slot)
-                else                    
+                else
+
+                    if Character["Right Arm"]:FindFirstChild("RightGrip") then Character["Right Arm"].RightGrip:Destroy() end         
                     rFakeHandle = realhandle:Clone(); rFakeHandle.Parent = tool; rFakeHandle.Name = "RightFakeHandle"; rFakeHandle.Transparency = 1; rFakeHandle.CanCollide = false; rFakeHandle.Massless = true
                     lFakeHandle = realhandle:Clone(); lFakeHandle.Parent = tool; lFakeHandle.Name = "LeftFakeHandle"; lFakeHandle.Transparency = 1; lFakeHandle.CanCollide = false; lFakeHandle.Massless = true
                     
-                    local rFakeGrip = Instance.new("Weld", Character["Right Arm"]); rFakeGrip.C0 = CFrame.new(0, -1, 0, 1, 0, -0, 0, 0, 1, 0, -1, -0); rFakeGrip.C1 = tool.Grip; rFakeGrip.Part1 = rFakeHandle; rFakeGrip.Part0 = ToolTrackR
-                    local lFakeGrip = Instance.new("Weld", Character["Left Arm"]); lFakeGrip.C0 = CFrame.new(0, -1, 0, 1, 0, -0, 0, 0, 1, 0, -1, -0); lFakeGrip.C1 = tool.Grip; lFakeGrip.Part1 = lFakeHandle; lFakeGrip.Part0 = ToolTrackL
+                    local rFakeGrip = Instance.new("Weld", ToolTrackR); rFakeGrip.C0 = CFrame.new(0, -1, 0, 1, 0, -0, 0, 0, 1, 0, -1, -0); rFakeGrip.C1 = tool.Grip; rFakeGrip.Part1 = rFakeHandle; rFakeGrip.Part0 = ToolTrackR
+                    local lFakeGrip = Instance.new("Weld", ToolTrackL); lFakeGrip.C0 = CFrame.new(0, -1, 0, 1, 0, -0, 0, 0, 1, 0, -1, -0); lFakeGrip.C1 = tool.Grip; lFakeGrip.Part1 = lFakeHandle; lFakeGrip.Part0 = ToolTrackL
                     
                     toolAlign = Netless:align(realhandle, VRCharacter["UpperTorso"], slot)
                 end
@@ -471,8 +495,9 @@ function Init()
                 end
 
                 Event(RunService.Stepped:Connect(function()
-                    realhandle.CanCollide = false
+                    realhandle.CanCollide = true
                 end))
+
 
 
                 Utils:NoCollideModel(tool, Character)
@@ -482,7 +507,7 @@ function Init()
 
         if RigType == "R6" and Character["Right Arm"]:FindFirstChild("RightGrip") then Character["Right Arm"].RightGrip:Destroy() end
         for i,tool in pairs(LocalPlayer.Backpack:GetChildren()) do
-            task.spawn(doTool, tool)
+            doTool(tool)
         end
 
         Event(Character.ChildAdded:Connect(doTool))
@@ -660,8 +685,12 @@ function Init()
 
         for i,v in pairs(Character:GetDescendants()) do
             Event(RunService.Stepped:Connect(function()
-                if v:IsA("BasePart") and not v.Name:find("Fake") and not v == Humanoid.RootPart then
-                    v.CanCollide = false
+                if v:IsA("BasePart") and not (v.Name:find("Fake") and v.Parent == Character) then
+                    if ControlService.ActiveController == "Gorilla" and v.Name == "HumanoidRootPart" then
+                        v.CanCollide = true
+                    else
+                        v.CanCollide = false
+                    end
                 end
             end))
         end

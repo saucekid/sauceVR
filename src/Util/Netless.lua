@@ -50,7 +50,7 @@ local ssr = fenv.setsimulationradius or fenv.set_simulation_radius or fenv.set_s
 
 local reclaim, lostpart = c.PrimaryPart, nil
 
-local v3_hide = v3(0, 400, 0)
+local v3_hide = v3(0, 350, 0)
 
 pcall(function()
     settings().Physics.AllowSleep = false
@@ -82,7 +82,7 @@ function netless:align(Part0, Part1, offset, nameHide)
     if Part0.Name == "Head" and align.nameHide then
         tdelay(0, function()
             while twait(6) and Part0 and c do
-                hide = #Part0:GetConnectedParts() > 0
+                hide = true
                 twait(0.04)
                 hide = false
             end

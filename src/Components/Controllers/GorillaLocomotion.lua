@@ -235,7 +235,7 @@ function GorillaLocomotionController:UpdateCharacter()
         return
     end
 
-    if not self.ClimbingRight and not self.ClimbingLeft then
+    if not self.ClimbingRight and not self.ClimbingLeft and not self.Character.Humanoid.Sit then
         self.Character.Humanoid.PlatformStand = true
     else
         self.Character.Humanoid.PlatformStand = false
@@ -276,12 +276,6 @@ function GorillaLocomotionController:UpdateCharacter()
             if DirectionState == "Forward" then
                 self.Character.Humanoid.Jump = true
             end
-        end
-    else
-        if self.Character.Humanoid.Sit then
-            TurnGyro.MaxTorque = Vector3.new(0,0,0)
-        else
-            TurnGyro.MaxTorque = Vector3.new(17000,17000,17000); TurnGyro.P = 17000
         end
     end
 
