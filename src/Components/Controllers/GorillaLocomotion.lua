@@ -100,10 +100,11 @@ function GorillaLocomotionController:Enable()
     end
 
     local torso = self.Character.Parts.UpperTorso
-    local rightShoulder, RSHOULDER_C0_CACHE = Utils:createMotor(torso, RUA, CFrame.new(1.5,0.8,0), CFrame.new(0,1,0), "RS");
+
+    local rightShoulder, RSHOULDER_C0_CACHE = Utils:createMotor(torso, RUA, self.Character.Attachments.UpperTorso.RightShoulderRigAttachment.CFrame, CFrame.new(0,1,0), "RS");
     local rightElbow, RELBOW_C0_CACHE = Utils:createMotor(RUA, RLA, CFrame.new(0,-1,0), CFrame.new(0,1,0), "RE");
     local rightWrist = Utils:createMotor(RLA, RH, CFrame.new(0,-0.5,0), CFrame.new(0,0.5,0), "RW");
-    local leftShoulder, LSHOULDER_C0_CACHE = Utils:createMotor(torso, LUA, CFrame.new(-1.5,0.8,0), CFrame.new(0,1,0), "LS");
+    local leftShoulder, LSHOULDER_C0_CACHE = Utils:createMotor(torso, LUA, self.Character.Attachments.UpperTorso.LeftShoulderRigAttachment.CFrame, CFrame.new(0,1,0), "LS");
     local leftElbow, LELBOW_C0_CACHE = Utils:createMotor(LUA, LLA, CFrame.new(0,-1,0), CFrame.new(0,1,0), "LE");
     local leftWrist = Utils:createMotor(LLA, LH, CFrame.new(0,-0.5,0), CFrame.new(0,0.5,0), "LW");
 
@@ -230,11 +231,12 @@ end
 
 function GorillaLocomotionController:UpdateCharacter()
     --Update the base character.
-    self.super:UpdateCharacter()
     if not self.Character then
         return
     end
 
+    self.super:UpdateCharacter()
+    
     if not self.ClimbingRight and not self.ClimbingLeft and not self.Character.Humanoid.Sit then
         self.Character.Humanoid.PlatformStand = true
     else
@@ -271,7 +273,7 @@ function GorillaLocomotionController:UpdateCharacter()
                     goalTween.Completed:Wait()
                 end
             end
-            TurnGyro.MaxTorque = Vector3.new(17000,17000,17000); TurnGyro.P = 17000
+            TurnGyro.MaxTorque = Vector3.new(9e9,2000,9e9)
         else
             if DirectionState == "Forward" then
                 self.Character.Humanoid.Jump = true

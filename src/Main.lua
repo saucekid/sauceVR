@@ -1,10 +1,6 @@
 local sauceVR = script:FindFirstAncestor("sauceVR")
 
 local Players = game:GetService("Players")  
-local Lighting = game:GetService("Lighting")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local ScriptContext = game:GetService("ScriptContext")
-local VRService = game:GetService("VRService")
 local RunService = game:GetService("RunService")
 local HttpService = game:GetService("HttpService")
 local HapticService = game:GetService("HapticService")
@@ -23,6 +19,7 @@ local Utils = require(sauceVR.Util.Utils)
 
 local VRReady = UserInputService.VREnabled
 local diedFunc
+local propMenu
 
 getgenv().options = {
     HeadMovement = true,
@@ -114,6 +111,9 @@ function Init()
             Humanoid = Utils.WaitForChildOfClass(Character, "Humanoid")
             RigType = Humanoid.RigType.Name
 
+            --Wait for player to be on ground
+            repeat task.wait() until Humanoid.FloorMaterial ~= Enum.Material.Air 
+
             --Stop all animations
             local Animate = Character:FindFirstChild("Animate")
             if Animate then
@@ -160,7 +160,7 @@ function Init()
             for _,part in pairs(renderCharacter:GetDescendants()) do
                 if part:IsA("BasePart") and part.Name == "Head" then
                     part:Destroy()
-                elseif not part:IsA("BasePart") and not part:IsA("Humanoid") and not part:IsA("Clothing") and not part:IsA("Decal") and not part:IsA("SurfaceAppearance") then
+                elseif not part:IsA("BasePart") and not part:IsA("Humanoid") and not part:IsA("Clothing") and not part:IsA("Decal") and not part:IsA("SurfaceAppearance")  then
                     part:Destroy()
                 end
             end
@@ -173,6 +173,7 @@ function Init()
                 Humanoid.RootPart.Anchored = false
 
                 --Reweld hats in case unwelded
+                --[[
                 task.delay(0.5, function()
                     for _,hat in pairs(Character:GetChildren()) do
                         if hat:IsA("Accessory") then
@@ -188,6 +189,7 @@ function Init()
                         end
                     end
                 end)
+                ]]
             else
                 options.MaxNeckRotation = math.rad(0)
                 options.MaxNeckSeatedRotation = math.rad(0)
@@ -276,13 +278,12 @@ function Init()
             VirtualCharacter.PhysicalRightHand = VirtualRightArm
 
             VirtualCharacter.Aligns = {}
-
+            VirtualCharacter.Accessories = {}
+            
             ControlService:UpdateCharacterReference(VirtualCharacter)
 
-            CameraService:SetActiveCamera(VRReady and options.DefaultCameraOption)
-            if CameraService.CurrentCamera then
-                CameraService.CurrentCamera:Enable()
-            end
+            CameraService:SetActiveCamera(options.DefaultCameraOption)
+
             
             RunService:BindToRenderStep("sauceVRCharacterModelUpdate",Enum.RenderPriority.Camera.Value - 1,function()
                 ControlService:UpdateCharacter()
@@ -341,10 +342,11 @@ function Init()
                 VRCollision(part)
                 
                 local renderPart = renderCharacter:FindFirstChild(part.Name)
+
                 if renderPart then
                     renderPart.LocalTransparencyModifier = part.LocalTransparencyModifier
                     Event(RunService.RenderStepped:Connect(function()
-                        if (part.Position - renderPart.Position).Magnitude > 10 then
+                        if (part.Position - renderPart.Position).Magnitude > 20 then
                             renderPart:Destroy()
                         end
                         renderPart.LocalTransparencyModifier = part.LocalTransparencyModifier
@@ -356,6 +358,13 @@ function Init()
                         end
                     end))
                 end
+
+                Event(part.Touched:Connect(function(seat)
+                    if seat:IsA("Seat") then
+                        print("seat")
+                        seat:Sit(Humanoid)
+                    end
+                end))
 
                 if not disabledParts[part.Name] then
                     local partAlign
@@ -382,7 +391,7 @@ function Init()
                         function partAlign.Reset()
                             if Character and Humanoid and part then
                                 local vrPart = RigType == "R15" and VRCharacter:FindFirstChild(part.Name) or R6Parts[part.Name].Align
-                                partAlign.offset = RigType == "R15" and Vector3.new(0,0,0) or R6Parts[part.Name].Align
+                                partAlign.offset = RigType == "R15" and Vector3.new(0,0,0) or R6Parts[part.Name].Offset
                                 partAlign.Part1 = vrPart
                             end
                         end
@@ -390,7 +399,120 @@ function Init()
                         VirtualCharacter.Aligns[part.Name] = partAlign
                     end
                 end
+            elseif part.Name == "Handle" and part.Parent:IsA("Accessory") then
+
+                local hatClone = part.Parent:Clone()
+                hatClone.Parent = workspace
+                
+                local renderPart = hatClone.Handle
+                renderPart.Transparency = 1
+                
+                for _, pe in pairs(renderPart:GetDescendants()) do
+                    if pe:IsA("ParticleEmitter") then
+                        pe:Destroy()
+                    end
+                end
+
+                local bv = Instance.new("BodyVelocity")
+                bv.Velocity = Vector3.new(0,0,0); bv.MaxForce = Vector3.new(math.huge,math.huge,math.huge); bv.P = 9000; bv.Parent = renderPart
+    
+                if renderPart then
+                    Event(RunService.RenderStepped:Connect(function()
+                        renderPart.LocalTransparencyModifier = part.LocalTransparencyModifier
+                    end))
+
+                    Event(Character.DescendantRemoving:Connect(function(removed)
+                        if removed == part then
+                            renderPart:Destroy()
+                        end
+                    end))
+                end
+                
+                part.AccessoryWeld:Destroy()
+
+                local partAlign = Netless:align(part, renderPart)
+                partAlign.Handle = part
+                partAlign.Name = part.Parent.Name
+
+                function partAlign.Reset()
+                    if Character and Humanoid and part then
+                        partAlign.offset = Vector3.new(0,0,0) 
+                        partAlign.Part1 = renderPart
+                    end
+                end
+                
+                VirtualCharacter.Accessories[part.Parent.Name] = partAlign
             end
+        end
+
+
+        --Set up prop menu
+        propMenu = Library:createPropMenu(VirtualCharacter.Accessories) 
+        propMenu.propCreated = function(align)
+            local physics = align.Physics
+            local propPart = align.Handle:Clone()
+            propPart.Name = "Prop"
+            propPart.Anchored = not physics
+            propPart.CanCollide = true
+            propPart.Transparency = 0
+            propPart.LocalTransparencyModifier = 0
+            propPart.Parent = align.Handle.Parent
+
+            VRCollision(propPart)
+
+            local propHighlight = Instance.new("Highlight")
+            propHighlight.FillTransparency = 1
+            propHighlight.Parent = propPart
+
+            local holding = false
+            local offset = Humanoid.RootPart.CFrame * CFrame.new(0,0,-3)
+            Event(RunService.RenderStepped:Connect(function()
+                if not physics or holding then
+                    propPart.CFrame = offset
+                end
+            end))
+
+            
+            Event(UserInputService.InputBegan:connect(function(key)
+                if holding or not propPart then return end
+                if key.KeyCode == Enum.KeyCode.ButtonR1 or key.KeyCode == Enum.KeyCode.E then
+                    if (VirtualRightArm.Position - propPart.Position).Magnitude < 1 then
+                        local start = propPart.CFrame:ToObjectSpace(VirtualRightArm.CFrame)
+                        holding = true
+
+                        repeat task.wait()
+                            offset = (VirtualRightArm.CFrame * start)
+                        until not holding
+                    end
+                elseif key.KeyCode == Enum.KeyCode.ButtonL1 or key.KeyCode == Enum.KeyCode.Q then
+                    if (VirtualLeftArm.Position - propPart.Position).Magnitude < 1 then
+                        local start = propPart.CFrame:ToObjectSpace(VirtualLeftArm.CFrame)
+                        holding = true
+
+                        repeat task.wait()
+                            offset = (VirtualLeftArm.CFrame * start)
+                        until not holding
+                    end
+                end
+            end))
+
+            Event(UserInputService.InputEnded:connect(function(key)
+                if key.KeyCode == Enum.KeyCode.ButtonR1 or key.KeyCode == Enum.KeyCode.E then
+                    holding = false
+                elseif key.KeyCode == Enum.KeyCode.ButtonL1 or key.KeyCode == Enum.KeyCode.Q then
+                    holding = false
+                end
+            end))
+
+            align.Part1 = propPart
+        end
+
+        propMenu.propRemoved = function(align)
+            local propPart = align.Handle.Parent:FindFirstChild("Prop")
+            if propPart then
+                propPart:Destroy()
+            end
+            align.Reset()
         end
 
         --Set up tool holding.
@@ -413,7 +535,7 @@ function Init()
             if RigType == "R6" then
                 ToolTrackR = Instance.new("Part")
                 ToolTrackR.Transparency = 1
-                ToolTrackR.Size = VirtualRightArm.Size
+                ToolTrackR.Size = VirtualRightArm.Size 
                 ToolTrackR.Anchored = true
                 ToolTrackR.CanCollide = false
                 ToolTrackR.Parent = Character
@@ -426,8 +548,8 @@ function Init()
                 ToolTrackL.Parent = Character
             
                 Event(RunService.RenderStepped:Connect(function()
-                    ToolTrackR.CFrame = VirtualRightArm.CFrame  * CFrame.Angles(math.rad(-90),0,0) * CFrame.new(0,1,0)
-                    ToolTrackL.CFrame = VirtualLeftArm.CFrame * CFrame.Angles(math.rad(-90),0,0) * CFrame.new(0,1,0) 
+                    ToolTrackR.CFrame = VirtualRightArm.CFrame  * CFrame.Angles(math.rad(0),0,0) * CFrame.new(0,1,0)
+                    ToolTrackL.CFrame = VirtualLeftArm.CFrame * CFrame.Angles(math.rad(0),0,0) * CFrame.new(0,1,0) 
                 end))
             end
         end
@@ -504,6 +626,8 @@ function Init()
                 Utils:NoCollideModel(tool, VRCharacter)
             end
         end
+
+        
 
         if RigType == "R6" and Character["Right Arm"]:FindFirstChild("RightGrip") then Character["Right Arm"].RightGrip:Destroy() end
         for i,tool in pairs(LocalPlayer.Backpack:GetChildren()) do
@@ -623,21 +747,27 @@ function Init()
         end))
         
         --Handle teleporting.
-        local oldpos; Event(Humanoid.RootPart:GetPropertyChangedSignal("Position"):Connect(function()
-            if oldpos and Humanoid and Humanoid.RootPart and (oldpos - Humanoid.RootPart.Position).Magnitude > 10 then
-                rGrabWeld.Part1 = nil
-                lGrabWeld.Part1 = nil
-                VirtualLeftArm.CFrame = Humanoid.RootPart.CFrame
-                VirtualRightArm.CFrame = Humanoid.RootPart.CFrame
+        local oldpos = Humanoid.RootPart.Position; Event(Humanoid.RootPart:GetPropertyChangedSignal("Position"):Connect(function()
+            if Humanoid and Humanoid.RootPart then
+                if oldpos and (oldpos - Humanoid.RootPart.Position).Magnitude > 10 then
+                    rGrabWeld.Part1 = nil
+                    lGrabWeld.Part1 = nil
+                    VirtualLeftArm.CFrame = Humanoid.RootPart.CFrame
+                    VirtualRightArm.CFrame = Humanoid.RootPart.CFrame
+                end
+                oldpos = Humanoid.RootPart.Position
             end
-            oldpos = Humanoid.RootPart.Position
         end))
 
         --Reset character when death.
         diedFunc = function()
             diedFunc = nil
 
+            RunService:UnbindFromRenderStep("sauceVRCharacterModelUpdate")
+
             Character:BreakJoints()
+
+            propMenu:Destroy()
 
             for i,v in pairs(Character:GetDescendants()) do
                 if v:IsA("BodyVelocity") or v:IsA("AlignPosition") or v:IsA("AlignOrientation") then
@@ -651,7 +781,6 @@ function Init()
                 CameraService.CurrentCamera:Disable()
             end
 
-            RunService:UnbindFromRenderStep("sauceVRCharacterModelUpdate")
 
             CurrentCamera.CameraType = "Custom"
 
@@ -659,12 +788,17 @@ function Init()
             Utils:ClearCache()
             VRCharacter:Destroy()
 
-            task.delay(Players.RespawnTime + 1.5, function()
+            task.delay(Players.RespawnTime + 1, function()
                 LoadCharacter()
             end)
         end
 
         local resetBindable = Instance.new("BindableEvent") do
+            Event(Character.DescendantRemoving:Connect(function(removed)
+                if removed.Name == "HumanoidRootPart" then
+                    diedFunc()
+                end
+            end))
             Event(Humanoid.Died:Connect(diedFunc))
             Event(resetBindable.Event:connect(diedFunc))
             StarterGui:SetCore("ResetButtonCallback", resetBindable)
@@ -709,9 +843,10 @@ function Init()
     Keyboard:Init()
 
     --Set up VR Menu.
+
     local optionsMenu = Library:CreateMenu("Options") do
         local generalTab = optionsMenu:AddTab("General", "rbxassetid://10675474985")
-            generalTab:AddSelectButton("Movement", options.DefaultMovementMethod, {"None", "SmoothLocomotion", "TeleportController", "Gorilla"}, function(mode) 
+            generalTab:AddSelectButton("Movement", options.DefaultMovementMethod, {"None", "SmoothLocomotion", "TeleportController", "GorillaLocomotion"}, function(mode) 
                 ControlService:SetActiveController(mode)
             end)
 
@@ -783,6 +918,10 @@ function Init()
             optionsMenu:SetEnabled(true) 
         end)
 
+        buttonGroup:AddButton("Props", "rbxassetid://12403104094", function() 
+            propMenu:SetEnabled(true) 
+        end)
+
         buttonGroup:AddButton("Keyboard", "rbxassetid://11738672671", function() 
             Keyboard.Active = true
             local VRInputs =  VRInputService:GetVRInputs()
@@ -793,11 +932,14 @@ function Init()
 
         local switch = false
         buttonGroup:AddButton("Camera", "rbxassetid://11738494422", function() 
-            if switch then
-                CameraService:SetActiveCamera("Default")
-            else
+            if CameraService.ActiveCamera == "Default" then
                 CameraService:SetActiveCamera("ThirdPersonTrack")
+            elseif CameraService.ActiveCamera == "ThirdPersonTrack" then
+                CameraService:SetActiveCamera("Mirror")
+            else
+                CameraService:SetActiveCamera("Default")
             end
+            Library:ToolTip(CameraService.ActiveCamera, 1)
             switch = not switch
         end)
 

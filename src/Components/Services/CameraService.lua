@@ -1,6 +1,7 @@
 local sauceVR = script:FindFirstAncestor("sauceVR")
 local DefaultCamera = require(sauceVR.Components.Cameras.Default)
 local ThirdPersonTrackCamera = require(sauceVR.Components.Cameras.ThirdPerson)
+local MirrorCamera = require(sauceVR.Components.Cameras.Mirror)
 
 local CameraService = {}
 CameraService.RegisteredCameras = {}
@@ -8,10 +9,9 @@ CameraService.RegisteredCameras = {}
 function CameraService:RegisterCamera(Name,Camera)
     self.RegisteredCameras[Name] = Camera
 end
-
+CameraService:RegisterCamera("Mirror",MirrorCamera)
 CameraService:RegisterCamera("ThirdPersonTrack",ThirdPersonTrackCamera)
 CameraService:RegisterCamera("Default",DefaultCamera)
-
 
 function CameraService:SetActiveCamera(Name)
     if self.ActiveCamera == Name then return end

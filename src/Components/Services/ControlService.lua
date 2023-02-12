@@ -13,7 +13,7 @@ end
 
 ControlService:RegisterController("TeleportController", TeleportController)
 ControlService:RegisterController("SmoothLocomotion", SmoothLocomotionController)
-ControlService:RegisterController("Gorilla", GorillaLocomotionController)
+ControlService:RegisterController("GorillaLocomotion", GorillaLocomotionController)
 ControlService:RegisterController("None", BaseController)
 
 function ControlService:UpdateCharacterReference(character)

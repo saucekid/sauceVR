@@ -13,12 +13,10 @@ local buttonTemplatePart = sauceVR.Assets.Button
 local menuTemplate = sauceVR.Assets.Menu
 local promptTemplatePart = sauceVR.Assets.Prompt
 local tipTemplatePart = sauceVR.Assets.Tooltip
+local propMenu = sauceVR.Assets.PropMenu
 
 local Terpy = require(sauceVR.Util.Terpy)
 
-
-local MENU_OPEN_TIME_REQUIREMENT = 1
-local MENU_OPEN_TIME = 0.25
 
 
 local function Lerp(a, b, t)
@@ -54,7 +52,7 @@ local function shallowCopy(original)
 end
 
 local function bump()
-    HapticService:SetMotor(Enum.UserInputType.Gamepad1, Enum.VibrationMotor.RightHand, 0.1)
+    HapticService:SetMotor(Enum.UserInputType.Gamepad1, Enum.VibrationMotor.RightHand, 0.4)
     task.wait()
     HapticService:SetMotor(Enum.UserInputType.Gamepad1, Enum.VibrationMotor.RightHand, 0)
 end
@@ -66,6 +64,7 @@ end
 local Library = {}
 local Menus = {}
 
+Library.MENU_OPEN_TIME_REQUIREMENT = 1
 
 function Library:CreateButtonGroup()
 	local partCache = Instance.new("Model"); partCache.Name = "ButtonGroup";
@@ -276,7 +275,7 @@ function Library:CreateButtonGroup()
     
                 --Update the progress bars.
                 if BothControllersUpStartTime and not MenuToggleReached then
-                    local DeltaTimePercent = (tick() - BothControllersUpStartTime)/MENU_OPEN_TIME_REQUIREMENT
+                    local DeltaTimePercent = (tick() - BothControllersUpStartTime)/Library.MENU_OPEN_TIME_REQUIREMENT
                     LeftAdorn.Size = Vector3.new(0.1,0,0.25 * DeltaTimePercent)
                     RightAdorn.Size = Vector3.new(0.1,0,0.25 * DeltaTimePercent)
                     LeftAdorn.Visible = true
@@ -744,6 +743,293 @@ function Library:CreateMenu(name)
         Menu:SetEnabled(Menu.InTab, true)
     end)
     
+    table.insert(Menus, Menu)
+    return Menu
+end
+
+function Library:createPropMenu(props)
+    local Menu = {}
+        Menu.Props = {}
+        Menu.Enabled = false
+        Menu.currentProp = {}
+        Menu.Physics = true
+
+    local propMenu = propMenu:Clone()
+    local propMenuPart = propMenu.MenuPart
+    local propGui = propMenuPart.SurfaceGui
+    local propTemplate = propMenuPart.PropTemplate
+    local currentPropFrame, propsFrame = propGui.Main.CurrentProp, propGui.Main.ElementFrame
+    local backButton, createButton, headButton, physicsToggle = propGui.Main.BackButton, propGui.Main.PropButton, propGui.Main.HeadButton, propGui.Main.PhysicsToggle
+    
+    local backGroundPart = propMenu.Background
+    local backGroundGui = backGroundPart.SurfaceGui
+
+    propMenu.Parent = Camera
+
+    local viewGui = propMenuPart.ViewGui
+    local viewpropsFrame, viewcurrentPropFrame = viewGui.Main.ElementFrame, viewGui.Main.CurrentProp
+    viewGui.Parent = LocalPlayer.PlayerGui
+    viewGui.Adornee = backGroundPart
+
+    local currentPropCamera = Instance.new("Camera", viewcurrentPropFrame.PropViewport)
+    viewcurrentPropFrame.PropViewport.CurrentCamera = currentPropCamera
+
+    createButton.Visible = false
+    headButton.Visible = false
+    physicsToggle.Visible = false
+    
+    local firstCFAngles = (Camera.CFrame - Camera.CFrame.Position)  * CFrame.Angles(0,math.rad(180),0)
+    task.spawn(function()
+        while task.wait() do
+            if propGui.Enabled then
+                propMenu:PivotTo((CFrame.new(Camera.CFrame.Position + Vector3.new(0,1,0)) * firstCFAngles) * CFrame.new(0,0,9))
+            else
+                propMenu:PivotTo((CFrame.new(Camera.CFrame.Position + Vector3.new(0,1,0)) * CFrame.new(0,100,0)))
+            end
+        end
+    end)
+
+    function Menu:SetEnabled(bool, keepCFrame)
+        if bool then
+            if not keepCFrame then
+                firstCFAngles = (Camera.CFrame - Camera.CFrame.Position)  * CFrame.Angles(0,math.rad(180),0)
+            end
+
+            propGui.Enabled = true
+            backGroundGui.Enabled = true
+        else
+            propGui.Enabled = false
+            backGroundGui.Enabled = false
+        end
+    end
+
+    function Menu:createProp(prop)
+        local propFrame = propTemplate:Clone()
+        local viewpropFrame = propTemplate:Clone()
+        local vpFrame = viewpropFrame.PropViewport
+        propFrame.Name = prop.Name
+        propFrame.Parent = propsFrame
+        viewpropFrame.BackgroundTransparency = 1
+        viewpropFrame.Name = prop.Name
+        viewpropFrame.Parent = viewpropsFrame
+
+        local propClone = prop.Handle:Clone() do 
+            propClone.Anchored = true
+            propClone.CFrame = CFrame.new(0,0,0)
+            propClone.Parent = vpFrame
+            for _,v in pairs(propClone:GetChildren()) do
+                if not v:IsA("SpecialMesh") then
+                    v:Destroy()
+                end
+            end
+        end
+
+        local propCam = Instance.new("Camera", vpFrame)
+        propCam.CFrame = CFrame.new(Vector3.new(1,.6,-3 - propClone.Size.Y / 10), propClone.Position)
+
+        vpFrame.CurrentCamera = propCam
+
+        local mouseEnter = false
+        propFrame.MouseEnter:Connect(function()
+            if not mouseEnter then
+                mouseEnter = true
+
+                playSound("rbxassetid://6972108033")
+
+                task.spawn(bump)
+
+                repeat task.wait()
+                    propFrame.Transparency = Lerp(propFrame.Transparency, .7, 0.1)
+                    propFrame.BackgroundColor3 = propFrame.BackgroundColor3:Lerp(Color3.new(1,1,1), 0.1)
+                until propFrame.BackgroundColor3 == Color3.new(1,1,1) or mouseEnter == false
+            end
+        end)
+
+        propFrame.MouseLeave:Connect(function()
+            mouseEnter = false
+
+            repeat task.wait()
+                propFrame.BackgroundColor3 = propFrame.BackgroundColor3:Lerp(Color3.new(0,0,0), 0.1)
+                propFrame.Transparency = Lerp(propFrame.Transparency, .5, 0.1)
+            until propFrame.BackgroundColor3 ==Color3.new(0,0,0) or mouseEnter == true
+        end)
+        
+        UserInputService.InputBegan:Connect(function(key)
+            if mouseEnter then
+                if key.KeyCode == Enum.KeyCode.ButtonR2 or key.UserInputType == Enum.UserInputType.MouseButton1 then
+                    if Menu.currentProp and Menu.currentProp["prop"] then
+                        Menu.currentProp.propFrame.UIStroke.Enabled = false 
+                        Menu.currentProp.prop:Destroy()
+
+                        if Menu.currentProp.propFrame == propFrame then 
+                            createButton.Visible = false
+                            headButton.Visible = false
+                            physicsToggle.Visible = false
+                            Menu.currentProp = {}
+                            return 
+                        end
+                     end
+
+                    createButton.Visible = true
+                    --headButton.Visible = true
+                    physicsToggle.Visible = true
+                    physicsToggle.Image.Visible = false
+
+                    local foundProp = table.find(Menu.Props, prop)
+                    if not foundProp then
+                        createButton.Text = "Create Prop"
+                    else
+                        createButton.Text = "Remove Prop"
+                    end
+
+                    Menu.currentProp = {}
+
+                    propFrame.UIStroke.Enabled = true 
+                    Menu.currentProp.propFrame = propFrame
+                    Menu.currentProp.prop = propClone:Clone()
+                    Menu.currentProp.realProp = prop
+                    Menu.currentProp.realProp.Physics = false
+                    Menu.currentProp.prop.Parent = viewcurrentPropFrame.PropViewport
+                    currentPropCamera.CFrame = CFrame.new(Vector3.new(1,.6,-3 - propClone.Size.Y / 10), propClone.Position)
+
+                    -- rotate lol
+                    local startingTick = tick()
+                    local rotCon 
+                    rotCon = RunService.RenderStepped:Connect(function()
+                        local diff = tick() - startingTick
+                        if Menu.currentProp.prop then
+                            Menu.currentProp.prop.CFrame = CFrame.Angles(0, math.rad(diff*30), 0)
+                        else
+                            rotCon:Disconnect()
+                        end
+                    end)
+                end
+            end
+        end)
+    end
+
+    --backbutton
+    local mouseEnter_back = false
+    backButton.MouseEnter:Connect(function()
+        if not mouseEnter_back then                                                                                                    
+            mouseEnter_back = true
+
+            task.spawn(bump)
+
+            repeat task.wait()
+                backButton.ImageTransparency = Lerp(backButton.ImageTransparency, .7, 0.1)
+            until backButton.ImageTransparency == .1 or mouseEnter_back == false
+        end
+    end)
+
+    backButton.MouseLeave:Connect(function()
+        mouseEnter_back = false
+
+        repeat task.wait()
+            backButton.ImageTransparency = Lerp(backButton.ImageTransparency, 1, 0.1)
+        until backButton.ImageTransparency == 1 or mouseEnter_back == true
+    end)
+
+    backButton.MouseButton1Click:Connect(function()
+        Menu:SetEnabled(false)
+    end)
+    
+    -- physics toggle
+    local mouseEnter_phys = false
+    physicsToggle.MouseEnter:Connect(function()
+        if not mouseEnter_phys then
+            mouseEnter_phys = true
+            playSound("rbxassetid://6972108033")
+
+            task.spawn(bump)
+
+            repeat task.wait()
+                physicsToggle.BackgroundColor3 = physicsToggle.BackgroundColor3:Lerp(Color3.new(1,1,1), 0.1)
+                physicsToggle.BackgroundTransparency = Lerp(physicsToggle.BackgroundTransparency, .5, 0.1)
+            until physicsToggle.BackgroundTransparency == .5 or mouseEnter_phys == false
+        end
+    end)
+
+    physicsToggle.MouseLeave:Connect(function()
+        mouseEnter_phys = false
+
+        repeat task.wait()
+            physicsToggle.BackgroundColor3 = physicsToggle.BackgroundColor3:Lerp(Color3.new(0,0,0), 0.1)
+            physicsToggle.BackgroundTransparency = Lerp(physicsToggle.BackgroundTransparency, .7, 0.1)
+        until physicsToggle.BackgroundTransparency == 1 or mouseEnter_phys == true
+    end)
+
+    UserInputService.InputBegan:Connect(function(key)
+        if mouseEnter_phys then
+            if key.KeyCode == Enum.KeyCode.ButtonR2 or key.UserInputType == Enum.UserInputType.MouseButton1 then
+                print(Menu.currentProp.realProp.Physics)
+                if Menu.currentProp.realProp.Physics == true then
+                    Menu.currentProp.realProp.Physics = false
+                    physicsToggle.Image.Visible = false
+                else
+                    Menu.currentProp.realProp.Physics = true
+                    physicsToggle.Image.Visible = true
+                end
+            end
+        end
+    end)
+
+    --prop button
+    local mouseEnter_prop = false
+    createButton.MouseEnter:Connect(function()
+        if not mouseEnter_prop then
+            mouseEnter_prop = true
+            playSound("rbxassetid://6972108033")
+
+            task.spawn(bump)
+
+            repeat task.wait()
+                createButton.BackgroundColor3 = createButton.BackgroundColor3:Lerp(Color3.new(1,1,1), 0.1)
+                createButton.BackgroundTransparency = Lerp(createButton.BackgroundTransparency, .5, 0.1)
+            until createButton.BackgroundTransparency == .5 or mouseEnter_prop == false
+        end
+    end)
+
+    createButton.MouseLeave:Connect(function()
+        mouseEnter_prop = false
+
+        repeat task.wait()
+            createButton.BackgroundColor3 = createButton.BackgroundColor3:Lerp(Color3.new(0,0,0), 0.1)
+            createButton.BackgroundTransparency = Lerp(createButton.BackgroundTransparency, .7, 0.1)
+        until createButton.BackgroundTransparency == 1 or mouseEnter_prop == true
+    end)
+
+    createButton.MouseButton1Click:Connect(function()
+        local foundProp = table.find(Menu.Props, Menu.currentProp.realProp)
+        if not foundProp then
+            self:ToolTip("Created prop, grip either hand near to hold it", 2)
+            Menu:SetEnabled(false)
+            Menu.currentProp.propFrame.Image.Visible = true
+            createButton.Text = "Remove Prop"
+            table.insert(Menu.Props, Menu.currentProp.realProp)
+            Menu.propCreated(Menu.currentProp.realProp)
+        else
+            Menu.currentProp.propFrame.Image.Visible = false
+            createButton.Text = "Create Prop"
+            table.remove(Menu.Props, foundProp)
+            Menu.propRemoved(Menu.currentProp.realProp)
+        end
+    end)
+
+    function Menu:Destroy()
+        propMenu:Destroy()
+    end
+
+
+    for _,prop in pairs(props) do
+        Menu:createProp(prop)
+    end
+
+    if #propsFrame:GetChildren() <= 0 then
+        propGui.Main.NoHats.Visible = true
+    end
+
+    Menu:SetEnabled(false)
     table.insert(Menus, Menu)
     return Menu
 end

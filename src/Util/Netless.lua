@@ -50,7 +50,7 @@ local ssr = fenv.setsimulationradius or fenv.set_simulation_radius or fenv.set_s
 
 local reclaim, lostpart = c.PrimaryPart, nil
 
-local v3_hide = v3(0, 350, 0)
+local v3_hide = v3(0, 400, 0)
 
 pcall(function()
     settings().Physics.AllowSleep = false
@@ -75,20 +75,27 @@ function netless:align(Part0, Part1, offset, nameHide)
     align.att1 = att1
 
     --Remove any welds/motors connected to part.
-    local Motor = Utils:GetMotorForLimb(Part0); if Motor and Part0.Name ~= "Handle" then Motor:Destroy() end
+    local Motor = Utils:GetMotorForLimb(Part0); if Motor then Motor:Destroy() end
 
-    --Hides health by moving head away for a moment
+    local accessoryWeld = Part0:FindFirstChild("AccessoryWeld")
+    if accessoryWeld then
+        accessoryWeld:Destroy()
+    end
+
+    --Hide health by moving head away for a moment (PATCHED)
+    --[[
     local hide = false
     if Part0.Name == "Head" and align.nameHide then
         tdelay(0, function()
             while twait(6) and Part0 and c do
                 hide = true
-                twait(0.04)
+                twait(0.015)
                 hide = false
             end
         end)
     end
-    
+    ]]
+
     --Align Part0 to Part1
     local rot = rad(0.05)
     local con0, con1 = nil, nil
@@ -104,7 +111,7 @@ function netless:align(Part0, Part1, offset, nameHide)
             if lostpart == align.Part0 then
                 lostpart = nil
             end
-            att1[typeof(offset) == "CFrame" and "CFrame" or "Position"] = align.offset or v3_0
+            att1[typeof(align.offset) == "CFrame" and "CFrame" or "Position"] = align.offset or v3_0
             local newcf = align.Part1.CFrame * att1.CFrame
             local vel = (newcf.Position - lastpos) / delta
             align.Part0.Velocity = getNetlessVelocity(vel)

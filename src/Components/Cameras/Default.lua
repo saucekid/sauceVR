@@ -11,7 +11,7 @@ function DefaultCamera:Enable()
     self.TransparencyEvents = {}
     if Players.LocalPlayer.Character then
         table.insert(self.TransparencyEvents,Players.LocalPlayer.Character.DescendantAdded:Connect(function(Part)
-            if Part:IsA("BasePart") then
+            if Part:IsA("BasePart") and Part.Name ~= "Prop" then
                 if Part.Parent:IsA("Accoutrement") then
                     Part.LocalTransparencyModifier = 1
                     table.insert(self.TransparencyEvents,RunService.RenderStepped:Connect(function()
@@ -26,7 +26,7 @@ function DefaultCamera:Enable()
             end
         end))
         for _,Part in pairs(Players.LocalPlayer.Character:GetDescendants()) do
-            if Part:IsA("BasePart") then
+            if Part:IsA("BasePart")  and Part.Name ~= "Prop" then
                 if Part.Parent:IsA("Accoutrement") then
                     Part.LocalTransparencyModifier = 1
                     table.insert(self.TransparencyEvents,RunService.RenderStepped:Connect(function()
@@ -65,7 +65,7 @@ end
 
 function DefaultCamera:UpdateCamera(HeadsetCFrameWorld)
     Workspace.CurrentCamera.CameraType = "Scriptable"
-    if USE_HEAD_LOCKED_WORKAROUND then
+   if USE_HEAD_LOCKED_WORKAROUND then
         local HeadCFrame = VRService:GetUserCFrame(Enum.UserCFrame.Head)
         Workspace.CurrentCamera.HeadLocked = true
         Workspace.CurrentCamera.CFrame = HeadsetCFrameWorld * (CFrame.new(HeadCFrame.Position * (Workspace.CurrentCamera.HeadScale - 1)) * HeadCFrame):Inverse()
